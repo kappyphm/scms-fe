@@ -8,6 +8,11 @@ import { landingPath } from "./auth/landing.js";
 import LoginPage from "./pages/LoginPage.jsx";
 import RoleHomePage from "./pages/RoleHomePage.jsx";
 import MenuPage from "./pages/MenuPage.jsx";
+import ProductEditPage from "./pages/menu/ProductEditPage.jsx";
+import BranchesPage from "./pages/BranchesPage.jsx";
+import BranchEditPage from "./pages/BranchEditPage.jsx";
+import VouchersPage from "./pages/VouchersPage.jsx";
+import VoucherEditPage from "./pages/VoucherEditPage.jsx";
 import {
   ShowcaseAdminPage,
   ShowcaseAuthPage,
@@ -73,6 +78,56 @@ export default function App() {
                   <RequireAuth>
                     <RequireRole roles={["COO"]}>
                       <MenuPage />
+                    </RequireRole>
+                  </RequireAuth>
+                ),
+              },
+              {
+                pattern: "/chain/menu/edit",
+                render: () => (
+                  <RequireAuth>
+                    <RequireRole roles={["COO"]}>
+                      <ProductEditPage />
+                    </RequireRole>
+                  </RequireAuth>
+                ),
+              },
+              {
+                pattern: "/chain/branches",
+                render: () => (
+                  <RequireAuth>
+                    <RequireRole roles={["COO"]}>
+                      <BranchesPage />
+                    </RequireRole>
+                  </RequireAuth>
+                ),
+              },
+              {
+                pattern: "/chain/branches/edit",
+                render: () => (
+                  <RequireAuth>
+                    <RequireRole roles={["COO"]}>
+                      <BranchEditPage />
+                    </RequireRole>
+                  </RequireAuth>
+                ),
+              },
+              {
+                pattern: "/chain/vouchers",
+                render: () => (
+                  <RequireAuth>
+                    <RequireRole roles={["COO"]}>
+                      <VouchersPage />
+                    </RequireRole>
+                  </RequireAuth>
+                ),
+              },
+              {
+                pattern: "/chain/vouchers/edit",
+                render: () => (
+                  <RequireAuth>
+                    <RequireRole roles={["COO"]}>
+                      <VoucherEditPage />
                     </RequireRole>
                   </RequireAuth>
                 ),
