@@ -1,15 +1,17 @@
 import { useEffect } from "react";
 import { HashRouter, Routes, useRouter } from "./router/HashRouter.jsx";
 import { ToastProvider } from "./components/ToastContext.jsx";
+import { AuthProvider } from "./auth/AuthContext.jsx";
 import {
   ShowcaseAdminPage,
   ShowcaseAuthPage,
   ShowcaseKioskPage,
   ShowcaseTaskPage,
 } from "./showcase/ShowcasePage.jsx";
+import SessionShowcasePage from "./showcase/SessionShowcasePage.jsx";
 
-// FE-01: mới có nền tảng + showcase nội bộ. Route "/" tạm điều hướng về
-// showcase; màn hình đăng nhập (FE-03) sẽ thay thế điểm vào này.
+// Giai đoạn nền tảng (FE-01 + FE-02): route "/" tạm điều hướng về showcase.
+// Màn hình đăng nhập (FE-03) sẽ thay thế điểm vào này.
 function RootRedirect() {
   const { navigate } = useRouter();
   useEffect(() => {
@@ -22,16 +24,19 @@ export default function App() {
   return (
     <HashRouter>
       <ToastProvider>
-        <Routes
-          routes={[
-            { pattern: "/", render: () => <RootRedirect /> },
-            { pattern: "/_showcase", render: () => <ShowcaseAdminPage /> },
-            { pattern: "/_showcase/auth", render: () => <ShowcaseAuthPage /> },
-            { pattern: "/_showcase/kiosk", render: () => <ShowcaseKioskPage /> },
-            { pattern: "/_showcase/task", render: () => <ShowcaseTaskPage /> },
-          ]}
-          fallback={<ShowcaseAdminPage />}
-        />
+        <AuthProvider>
+          <Routes
+            routes={[
+              { pattern: "/", render: () => <RootRedirect /> },
+              { pattern: "/_showcase", render: () => <ShowcaseAdminPage /> },
+              { pattern: "/_showcase/session", render: () => <SessionShowcasePage /> },
+              { pattern: "/_showcase/auth", render: () => <ShowcaseAuthPage /> },
+              { pattern: "/_showcase/kiosk", render: () => <ShowcaseKioskPage /> },
+              { pattern: "/_showcase/task", render: () => <ShowcaseTaskPage /> },
+            ]}
+            fallback={<ShowcaseAdminPage />}
+          />
+        </AuthProvider>
       </ToastProvider>
     </HashRouter>
   );

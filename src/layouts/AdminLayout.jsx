@@ -10,6 +10,12 @@ export default function AdminLayout({
   children,
 }) {
   const { path } = useRouter();
+  // Item active là item có path khớp dài nhất (tránh hai item cùng active
+  // khi một path là tiền tố của path khác, ví dụ /_showcase và /_showcase/session).
+  const allPaths = menu.flatMap((s) => s.items.map((i) => i.path));
+  const bestMatch = allPaths
+    .filter((p) => path === p || path.startsWith(`${p}/`))
+    .sort((a, b) => b.length - a.length)[0];
 
   return (
     <div className="admin-shell">
@@ -31,7 +37,7 @@ export default function AdminLayout({
             <div key={section.group}>
               <div className="sidebar__group">{section.group}</div>
               {section.items.map((item) => {
-                const active = path === item.path || path.startsWith(`${item.path}/`);
+                const active = item.path === bestMatch;
                 return (
                   <RouteLink
                     key={item.key}
