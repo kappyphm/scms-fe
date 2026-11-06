@@ -1,28 +1,22 @@
 import { useCallback, useEffect, useState } from "react";
 import { Button, Form, Modal, Spinner } from "react-bootstrap";
-import AdminLayout from "../layouts/AdminLayout.jsx";
-import ConfirmDialog from "../components/ConfirmDialog.jsx";
-import DataTable from "../components/DataTable.jsx";
-import FormField from "../components/FormField.jsx";
-import PageHeader from "../components/PageHeader.jsx";
-import SessionHeaderRight from "../components/SessionHeader.jsx";
-import StatusTag from "../components/StatusTag.jsx";
-import { useToast } from "../components/ToastContext.jsx";
-import { useAuth } from "../auth/AuthContext.jsx";
-import { buildMenu } from "../config/menu.js";
-import { categoriesApi } from "../api/categoriesApi.js";
-import { formatDateTime } from "../lib/format.js";
+import ConfirmDialog from "../../components/ConfirmDialog.jsx";
+import DataTable from "../../components/DataTable.jsx";
+import FormField from "../../components/FormField.jsx";
+import StatusTag from "../../components/StatusTag.jsx";
+import { useToast } from "../../components/ToastContext.jsx";
+import { categoriesApi } from "../../api/categoriesApi.js";
+import { formatDateTime } from "../../lib/format.js";
 
-// SCR-11 TAB-05 (phần danh mục) — Quản lý danh mục menu (UC09).
+// Tab Danh mục trong màn hình Menu & sản phẩm (SCR-11 TAB-05) — UC09.
+// Thứ tự hiển thị của danh mục áp dụng cho menu bán hàng toàn chuỗi.
 const STATUS_LABELS = { ACTIVE: "Đang hoạt động", INACTIVE: "Ngừng hoạt động" };
 const PAGE_SIZE = 10;
 
 const emptyForm = { name: "", description: "", sortOrder: 1, status: "ACTIVE" };
 
-export default function MenuCategoriesPage() {
-  const { user } = useAuth();
+export default function CategoriesTab() {
   const toast = useToast();
-  const menu = buildMenu(user);
 
   const [page, setPage] = useState({ items: [], uiPage: 1, totalPages: 0, totalItems: 0 });
   const [uiPage, setUiPage] = useState(1);
@@ -188,18 +182,7 @@ export default function MenuCategoriesPage() {
   ];
 
   return (
-    <AdminLayout menu={menu} branchName={user?.branchName || undefined} headerRight={<SessionHeaderRight />} screenCode="SCR-11">
-      <PageHeader
-        title="Danh mục menu"
-        screenCode="SCR-11 · TAB-05"
-        description="Danh mục sản phẩm của toàn chuỗi. Thứ tự hiển thị áp dụng cho menu bán hàng."
-        actions={
-          <Button className="btn-accent" onClick={openCreate}>
-            + Thêm danh mục
-          </Button>
-        }
-      />
-
+    <>
       <div className="d-flex gap-2 mb-3">
         <Form.Control
           type="search"
@@ -223,6 +206,10 @@ export default function MenuCategoriesPage() {
           <option value="ACTIVE">Đang hoạt động</option>
           <option value="INACTIVE">Ngừng hoạt động</option>
         </Form.Select>
+        <div className="flex-grow-1" />
+        <Button className="btn-accent" onClick={openCreate}>
+          + Thêm danh mục
+        </Button>
       </div>
 
       <DataTable
@@ -334,6 +321,6 @@ export default function MenuCategoriesPage() {
         onCancel={() => setConfirm(null)}
         onConfirm={runConfirm}
       />
-    </AdminLayout>
+    </>
   );
 }

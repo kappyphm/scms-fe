@@ -7,7 +7,7 @@ import { RequireAuth, RequireRole } from "./auth/guards.jsx";
 import { landingPath } from "./auth/landing.js";
 import LoginPage from "./pages/LoginPage.jsx";
 import RoleHomePage from "./pages/RoleHomePage.jsx";
-import MenuCategoriesPage from "./pages/MenuCategoriesPage.jsx";
+import MenuPage from "./pages/MenuPage.jsx";
 import {
   ShowcaseAdminPage,
   ShowcaseAuthPage,
@@ -72,7 +72,7 @@ export default function App() {
                 render: () => (
                   <RequireAuth>
                     <RequireRole roles={["COO"]}>
-                      <MenuCategoriesPage />
+                      <MenuPage />
                     </RequireRole>
                   </RequireAuth>
                 ),
