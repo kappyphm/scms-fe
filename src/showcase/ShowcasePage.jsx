@@ -22,6 +22,7 @@ const MENU = [
     group: "Design system",
     items: [
       { key: "admin", label: "Admin shell + components", path: "/_showcase" },
+      { key: "session", label: "Phiên đăng nhập (FE-02)", path: "/_showcase/session" },
       { key: "auth", label: "Auth shell", path: "/_showcase/auth" },
       { key: "kiosk", label: "Kiosk shell", path: "/_showcase/kiosk" },
       { key: "task", label: "Task shell", path: "/_showcase/task" },
