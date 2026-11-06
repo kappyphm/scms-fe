@@ -9,6 +9,8 @@ import LoginPage from "./pages/LoginPage.jsx";
 import RoleHomePage from "./pages/RoleHomePage.jsx";
 import MenuPage from "./pages/MenuPage.jsx";
 import ProductEditPage from "./pages/menu/ProductEditPage.jsx";
+import EmployeesPage from "./pages/EmployeesPage.jsx";
+import EmployeeEditPage from "./pages/EmployeeEditPage.jsx";
 import BranchesPage from "./pages/BranchesPage.jsx";
 import BranchEditPage from "./pages/BranchEditPage.jsx";
 import VouchersPage from "./pages/VouchersPage.jsx";
@@ -108,6 +110,26 @@ export default function App() {
                   <RequireAuth>
                     <RequireRole roles={["COO"]}>
                       <BranchEditPage />
+                    </RequireRole>
+                  </RequireAuth>
+                ),
+              },
+              {
+                pattern: "/branch/employees",
+                render: () => (
+                  <RequireAuth>
+                    <RequireRole roles={["COO", "BRANCH_MANAGER"]}>
+                      <EmployeesPage />
+                    </RequireRole>
+                  </RequireAuth>
+                ),
+              },
+              {
+                pattern: "/branch/employees/edit",
+                render: () => (
+                  <RequireAuth>
+                    <RequireRole roles={["COO", "BRANCH_MANAGER"]}>
+                      <EmployeeEditPage />
                     </RequireRole>
                   </RequireAuth>
                 ),
