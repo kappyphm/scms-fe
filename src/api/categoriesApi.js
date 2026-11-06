@@ -22,6 +22,10 @@ export const categoriesApi = {
     });
     return normalizePage(page).items;
   },
+  // LƯU Ý: DTO chi tiết của backend (CategoryDetailDto) chỉ có
+  // { id, code, name, description, sortOrder, systemCategory,
+  // products } — KHÔNG có status/productCount/createdAt/updatedAt.
+  // Màn hình cần các trường đó thì lấy dòng từ list/listAll.
   detail(id) {
     return http.get(`/menu-categories/${id}`);
   },
