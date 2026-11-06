@@ -1,0 +1,227 @@
+/* Layout shells — tài liệu thiết kế mục 5.2.
+   Auth: split-screen · Admin: top rail 56px + sidebar 244px ·
+   Kiosk: full-screen · Task: header tác vụ + sticky action bar. */
+
+/* ---------- Chung ---------- */
+.brand-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  background: var(--ink);
+  color: var(--paper);
+  font-weight: 800;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  flex: none;
+}
+
+.screen-code {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* ---------- Admin shell ---------- */
+.admin-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar {
+  height: var(--topbar-h);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 0 18px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+
+.topbar__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+}
+
+.topbar__branch {
+  color: var(--muted);
+  font-weight: 500;
+  border-left: 1px solid var(--line);
+  padding-left: 12px;
+  margin-left: 2px;
+}
+
+.admin-body {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+.sidebar {
+  width: var(--sidebar-w);
+  flex: none;
+  border-right: 1px solid var(--line);
+  background: var(--paper);
+  padding: 14px 10px;
+  overflow-y: auto;
+}
+
+.sidebar__group {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 14px 10px 6px;
+}
+
+.sidebar__item {
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  color: var(--ink-2);
+  font-weight: 500;
+  border-left: 3px solid transparent;
+  cursor: pointer;
+}
+
+.sidebar__item:hover {
+  background: var(--paper-2);
+  color: var(--ink);
+}
+
+.sidebar__item.active {
+  background: var(--accent-soft);
+  color: var(--ink);
+  font-weight: 700;
+  border-left-color: var(--accent);
+}
+
+.sidebar__badge {
+  background: var(--ink);
+  color: var(--paper);
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 0 7px;
+  line-height: 18px;
+}
+
+.admin-content {
+  flex: 1;
+  min-width: 0;
+  padding: 20px 24px 32px;
+}
+
+@media (max-width: 1279px) {
+  .sidebar {
+    width: 76px;
+  }
+  .sidebar__group,
+  .sidebar__item .sidebar__label {
+    display: none;
+  }
+}
+
+/* ---------- Auth shell ---------- */
+.auth-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1.05fr 1fr;
+}
+
+.auth-brand {
+  background: var(--paper-2);
+  border-right: 1px solid var(--line);
+  padding: 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.auth-main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  background: var(--paper);
+}
+
+.auth-box {
+  width: 100%;
+  max-width: 400px;
+}
+
+@media (max-width: 900px) {
+  .auth-shell {
+    grid-template-columns: 1fr;
+  }
+  .auth-brand {
+    display: none;
+  }
+}
+
+/* ---------- Kiosk shell ---------- */
+.kiosk-shell {
+  min-height: 100vh;
+  background: var(--paper);
+  display: flex;
+  flex-direction: column;
+  padding: 24px 32px;
+}
+
+.kiosk-clock {
+  font-size: 40px;
+  line-height: 48px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Task shell ---------- */
+.task-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--paper);
+}
+
+.task-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 24px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+
+.task-body {
+  flex: 1;
+  padding: 20px 24px 88px;
+}
+
+.task-actions {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 14px 24px;
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+}
