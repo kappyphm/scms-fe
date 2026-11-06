@@ -1,21 +1,23 @@
-// Auth shell (tài liệu thiết kế mục 5.2): split-screen,
-// trái là khối thương hiệu, phải là form (SCR-01 dùng shell này).
-export default function AuthLayout({ screenCode = "SCR-01", children }) {
+// Auth shell theo prototype (views-auth.js + app.css .auth):
+// trái là panel mực với hero lớn và vòng tròn trang trí,
+// phải là form căn giữa, tối đa 400px.
+export default function AuthLayout({ children }) {
   return (
     <div className="auth-shell">
       <aside className="auth-brand">
-        <div className="d-flex align-items-center gap-2">
-          <span className="brand-mark">SC</span>
-          <strong>SCMS</strong>
+        <div className="auth-brand__top">
+          <span className="brand-mark brand-mark--light">SC</span>
+          <span>SCMS · Smart Cafe</span>
         </div>
-        <div>
-          <h1 className="mb-2">Smart Cafe Management System</h1>
-          <p className="text-muted-scms" style={{ maxWidth: 420 }}>
-            Hệ thống quản lý chuỗi cà phê — vận hành chi nhánh, bán hàng và quản trị chuỗi
-            trên một nền tảng.
-          </p>
+        <div className="auth-hero">
+          <h1>
+            Một sổ vận hành
+            <br />
+            cho cả chuỗi cà phê.
+          </h1>
+          <p>Bán hàng, ca quỹ, kho, nhân sự và báo cáo chuỗi trong cùng một nhịp vận hành.</p>
         </div>
-        <span className="screen-code">{screenCode}</span>
+        <div className="auth-foot">SCMS · Smart Cafe Management System · Phiên bản 1.0</div>
       </aside>
       <main className="auth-main">
         <div className="auth-box">{children}</div>

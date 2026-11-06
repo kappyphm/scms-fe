@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Button, Form, Spinner } from "react-bootstrap";
 import AuthLayout from "../layouts/AuthLayout.jsx";
 import FormField from "../components/FormField.jsx";
+import Icon from "../components/Icon.jsx";
 import { useAuth } from "../auth/AuthContext.jsx";
 import { landingPath } from "../auth/landing.js";
 import { useRouter } from "../router/HashRouter.jsx";
@@ -47,9 +48,15 @@ export default function LoginPage() {
   })();
 
   return (
-    <AuthLayout screenCode="SCR-01">
+    <AuthLayout>
+      <div className="page-code">
+        <span>SCR-01</span>
+        <b>LOGIN</b>
+      </div>
       <h2 className="mb-1">Đăng nhập vận hành</h2>
-      <p className="text-muted-scms mb-4">Đăng nhập để vào đúng phạm vi nghiệp vụ của bạn.</p>
+      <p className="text-muted-scms mb-4" style={{ fontSize: 13 }}>
+        Đăng nhập để vào đúng phạm vi nghiệp vụ của bạn.
+      </p>
 
       {status === "restoring" ? (
         <p className="text-muted-scms">
@@ -63,6 +70,7 @@ export default function LoginPage() {
             error={error?.fieldError?.("username") || null}
           >
             <Form.Control
+              size="lg"
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
@@ -73,6 +81,7 @@ export default function LoginPage() {
           </FormField>
           <FormField label="Mật khẩu" required error={error?.fieldError?.("password") || null}>
             <Form.Control
+              size="lg"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -89,9 +98,9 @@ export default function LoginPage() {
               checked={rememberMe}
               onChange={(e) => setRememberMe(e.target.checked)}
             />
-            <Button variant="link" className="p-0 text-decoration-none" style={{ color: "var(--accent-dark)", fontWeight: 600 }} onClick={() => setShowForgotNote((v) => !v)}>
+            <button type="button" className="link-btn" onClick={() => setShowForgotNote((v) => !v)}>
               Quên mật khẩu?
-            </Button>
+            </button>
           </div>
 
           {showForgotNote ? (
@@ -101,19 +110,17 @@ export default function LoginPage() {
             </p>
           ) : null}
 
-          {formError ? (
-            <div className="scms-panel px-3 py-2 mb-3" style={{ background: "var(--warn-soft)", borderColor: "var(--accent)" }}>
-              {formError}
-            </div>
-          ) : null}
+          {formError ? <div className="auth-error">{formError}</div> : null}
 
           <Button type="submit" variant="primary" size="lg" className="w-100" disabled={busy || !username || !password}>
             {busy ? (
               <>
-                <Spinner size="sm" className="me-2" /> Đang đăng nhập…
+                <Spinner size="sm" /> Đang đăng nhập…
               </>
             ) : (
-              "Đăng nhập"
+              <>
+                Đăng nhập <Icon name="arrowRight" size={15} />
+              </>
             )}
           </Button>
         </Form>

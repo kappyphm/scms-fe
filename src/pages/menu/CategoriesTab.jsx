@@ -173,7 +173,7 @@ export default function CategoriesTab() {
           <Button size="sm" variant="outline-secondary" onClick={() => setConfirm({ kind: "soft", row: r })}>
             Xóa
           </Button>
-          <Button size="sm" variant="danger" onClick={() => setConfirm({ kind: "hard", row: r })}>
+          <Button size="sm" variant="outline-secondary" onClick={() => setConfirm({ kind: "hard", row: r })}>
             Xóa hẳn
           </Button>
         </div>
@@ -207,7 +207,7 @@ export default function CategoriesTab() {
           <option value="INACTIVE">Ngừng hoạt động</option>
         </Form.Select>
         <div className="flex-grow-1" />
-        <Button className="btn-accent" onClick={openCreate}>
+        <Button variant="primary" onClick={openCreate}>
           + Thêm danh mục
         </Button>
       </div>

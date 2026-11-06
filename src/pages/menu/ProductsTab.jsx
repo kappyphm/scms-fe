@@ -13,7 +13,7 @@ import { formatDateTime, formatVnd } from "../../lib/format.js";
 // Cố ý chưa có ô tìm kiếm theo tên: backend lỗi 500 khi nhận param keyword
 // ở GET /products; chỉ bật lại khi backend đã sửa (xem productsApi.js).
 const STATUS_LABELS = { AVAILABLE: "Đang bán", UNAVAILABLE: "Tạm hết", INACTIVE: "Ngừng bán" };
-const STATUS_VARIANTS = { AVAILABLE: "success", UNAVAILABLE: "warn", INACTIVE: "neutral" };
+const STATUS_VARIANTS = { AVAILABLE: "dark", UNAVAILABLE: "warn", INACTIVE: "neutral" };
 const PAGE_SIZE = 10;
 
 const emptyForm = { name: "", categoryId: "", description: "", imageUrl: "", defaultSize: "", status: "AVAILABLE" };
@@ -166,7 +166,7 @@ export default function ProductsTab() {
           <Button size="sm" variant="outline-secondary" onClick={() => setConfirm({ kind: "soft", row: r })}>
             Xóa
           </Button>
-          <Button size="sm" variant="danger" onClick={() => setConfirm({ kind: "hard", row: r })}>
+          <Button size="sm" variant="outline-secondary" onClick={() => setConfirm({ kind: "hard", row: r })}>
             Xóa hẳn
           </Button>
         </div>
@@ -208,7 +208,7 @@ export default function ProductsTab() {
           <option value="INACTIVE">Ngừng bán</option>
         </Form.Select>
         <div className="flex-grow-1" />
-        <Button className="btn-accent" onClick={openCreate}>
+        <Button variant="primary" onClick={openCreate}>
           + Thêm sản phẩm
         </Button>
       </div>

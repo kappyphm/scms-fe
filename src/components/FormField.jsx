@@ -13,11 +13,7 @@ export default function FormField({ label, required = false, error = null, help 
       ) : null}
       {children}
       {help && !error ? <Form.Text>{help}</Form.Text> : null}
-      {error ? (
-        <div className="small mt-1" style={{ color: "var(--ink)", fontWeight: 600 }}>
-          {error}
-        </div>
-      ) : null}
+      {error ? <div className="field-error">{error}</div> : null}
     </Form.Group>
   );
 }

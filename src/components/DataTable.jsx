@@ -1,4 +1,5 @@
 import { Pagination, Spinner, Table } from "react-bootstrap";
+import Icon from "./Icon.jsx";
 
 // Bảng dữ liệu chuẩn (mục 7.3): header nhãn uppercase, số căn phải dạng
 // tabular, có trạng thái loading/rỗng và phân trang khớp PageResponse
@@ -30,8 +31,13 @@ export default function DataTable({ columns, rows, rowKey, loading = false, empt
               </tr>
             ) : rows.length === 0 ? (
               <tr>
-                <td colSpan={columns.length} className="text-center py-4 text-muted-scms">
-                  {emptyMessage}
+                <td colSpan={columns.length}>
+                  <div className="empty-state">
+                    <span className="empty-state__icon">
+                      <Icon name="search" size={18} />
+                    </span>
+                    <span>{emptyMessage}</span>
+                  </div>
                 </td>
               </tr>
             ) : (
