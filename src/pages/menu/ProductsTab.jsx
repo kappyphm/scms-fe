@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
 import { Button, Form } from "react-bootstrap";
-import ConfirmDialog from "../../components/ConfirmDialog.jsx";
 import DataTable from "../../components/DataTable.jsx";
 import StatusTag from "../../components/StatusTag.jsx";
 import { useToast } from "../../components/ToastContext.jsx";
@@ -12,7 +11,9 @@ import { formatDateTime, formatVnd } from "../../lib/format.js";
 // Tab Sản phẩm trong màn hình Menu & BOM (SCR-11 TAB-05) — UC10/UC11.
 // Thêm/Sửa sản phẩm là task screen /chain/menu/edit(?id=) mô phỏng
 // menuEdit của prototype (thông tin + giá theo size + topping trong
-// cùng một form); tab này chỉ còn danh sách + xoá mềm/xoá hẳn.
+// cùng một form). Danh sách không chứa nút thao tác (FE-13): bấm vào
+// tên món để mở trang chi tiết /chain/menu/detail?id=, nơi đặt Sửa,
+// Xoá mềm và Xóa hẳn.
 // Cố ý chưa có ô tìm kiếm theo tên: backend lỗi 500 khi nhận param
 // keyword ở GET /products; chỉ bật lại khi backend đã sửa.
 const STATUS_LABELS = { AVAILABLE: "Đang bán", UNAVAILABLE: "Tạm hết", INACTIVE: "Ngừng bán" };
@@ -37,9 +38,6 @@ export default function ProductsTab() {
   const [categoryFilter, setCategoryFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [loading, setLoading] = useState(true);
-
-  const [confirm, setConfirm] = useState(null); // { kind: 'soft'|'hard', row }
-  const [busyAction, setBusyAction] = useState(false);
 
   useEffect(() => {
     categoriesApi
@@ -69,28 +67,21 @@ export default function ProductsTab() {
     load();
   }, [load]);
 
-  async function runConfirm() {
-    if (!confirm) return;
-    setBusyAction(true);
-    try {
-      if (confirm.kind === "soft") {
-        await productsApi.softDelete(confirm.row.id);
-        toast.success(`Đã ngừng bán sản phẩm "${confirm.row.name}" (xoá mềm).`);
-      } else {
-        await productsApi.hardDelete(confirm.row.id);
-        toast.success(`Đã xóa vĩnh viễn sản phẩm "${confirm.row.name}".`);
-      }
-      setConfirm(null);
-      load();
-    } catch (err) {
-      toast.error(err.message);
-    } finally {
-      setBusyAction(false);
-    }
-  }
-
   const columns = [
-    { key: "name", header: "Tên sản phẩm" },
+    {
+      key: "name",
+      header: "Tên sản phẩm",
+      render: (r) => (
+        <button
+          type="button"
+          className="link-btn"
+          style={{ fontWeight: 600, fontSize: "inherit" }}
+          onClick={() => navigate(`/chain/menu/detail?id=${r.id}`)}
+        >
+          {r.name}
+        </button>
+      ),
+    },
     { key: "categoryName", header: "Danh mục", render: (r) => r.categoryName || "—" },
     { key: "defaultSize", header: "Size mặc định", render: (r) => r.defaultSize || "—" },
     { key: "price", header: "Giá bán", numeric: true, render: (r) => priceSummary(r) },
@@ -106,24 +97,6 @@ export default function ProductsTab() {
       render: (r) => <StatusTag label={STATUS_LABELS[r.status]} variant={STATUS_VARIANTS[r.status]} />,
     },
     { key: "updatedAt", header: "Cập nhật", render: (r) => formatDateTime(r.updatedAt) },
-    {
-      key: "actions",
-      header: "",
-      width: 210,
-      render: (r) => (
-        <div className="d-flex gap-1 justify-content-end">
-          <Button size="sm" variant="outline-secondary" onClick={() => navigate(`/chain/menu/edit?id=${r.id}`)}>
-            Sửa
-          </Button>
-          <Button size="sm" variant="outline-secondary" onClick={() => setConfirm({ kind: "soft", row: r })}>
-            Xóa
-          </Button>
-          <Button size="sm" variant="outline-secondary" onClick={() => setConfirm({ kind: "hard", row: r })}>
-            Xóa hẳn
-          </Button>
-        </div>
-      ),
-    },
   ];
 
   return (
@@ -173,31 +146,6 @@ export default function ProductsTab() {
             </Button>
           </>
         }
-      />
-
-      <ConfirmDialog
-        show={Boolean(confirm)}
-        title={confirm?.kind === "hard" ? "Xóa vĩnh viễn sản phẩm" : "Xoá mềm sản phẩm"}
-        body={
-          confirm ? (
-            confirm.kind === "hard" ? (
-              <p className="mb-0">
-                Xóa vĩnh viễn sản phẩm <strong>{confirm.row.name}</strong>? Hành động này không thể hoàn
-                tác và sẽ bị chặn nếu sản phẩm đang được gắn với voucher.
-              </p>
-            ) : (
-              <p className="mb-0">
-                Xoá mềm sản phẩm <strong>{confirm.row.name}</strong>? Sản phẩm chuyển sang trạng thái
-                Ngừng bán và không còn xuất hiện ở menu bán hàng.
-              </p>
-            )
-          ) : null
-        }
-        confirmLabel={confirm?.kind === "hard" ? "Xóa vĩnh viễn" : "Xác nhận"}
-        danger={confirm?.kind === "hard"}
-        busy={busyAction}
-        onCancel={() => setConfirm(null)}
-        onConfirm={runConfirm}
       />
     </>
   );

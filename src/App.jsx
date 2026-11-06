@@ -9,12 +9,14 @@ import LoginPage from "./pages/LoginPage.jsx";
 import RoleHomePage from "./pages/RoleHomePage.jsx";
 import MenuPage from "./pages/MenuPage.jsx";
 import ProductEditPage from "./pages/menu/ProductEditPage.jsx";
+import ProductDetailPage from "./pages/menu/ProductDetailPage.jsx";
 import KioskPage from "./pages/KioskPage.jsx";
 import RolesPage from "./pages/RolesPage.jsx";
 import EmployeesPage from "./pages/EmployeesPage.jsx";
 import EmployeeEditPage from "./pages/EmployeeEditPage.jsx";
 import BranchesPage from "./pages/BranchesPage.jsx";
 import BranchEditPage from "./pages/BranchEditPage.jsx";
+import BranchDetailPage from "./pages/BranchDetailPage.jsx";
 import VouchersPage from "./pages/VouchersPage.jsx";
 import VoucherEditPage from "./pages/VoucherEditPage.jsx";
 import {
@@ -88,6 +90,16 @@ export default function App() {
                 ),
               },
               {
+                pattern: "/chain/menu/detail",
+                render: () => (
+                  <RequireAuth>
+                    <RequireRole roles={["COO"]}>
+                      <ProductDetailPage />
+                    </RequireRole>
+                  </RequireAuth>
+                ),
+              },
+              {
                 pattern: "/chain/menu/edit",
                 render: () => (
                   <RequireAuth>
@@ -103,6 +115,16 @@ export default function App() {
                   <RequireAuth>
                     <RequireRole roles={["COO"]}>
                       <BranchesPage />
+                    </RequireRole>
+                  </RequireAuth>
+                ),
+              },
+              {
+                pattern: "/chain/branches/detail",
+                render: () => (
+                  <RequireAuth>
+                    <RequireRole roles={["COO"]}>
+                      <BranchDetailPage />
                     </RequireRole>
                   </RequireAuth>
                 ),
