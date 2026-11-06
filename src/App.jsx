@@ -12,6 +12,8 @@ import ProductEditPage from "./pages/menu/ProductEditPage.jsx";
 import ProductDetailPage from "./pages/menu/ProductDetailPage.jsx";
 import CategoryDetailPage from "./pages/menu/CategoryDetailPage.jsx";
 import CategoryEditPage from "./pages/menu/CategoryEditPage.jsx";
+import ToppingDetailPage from "./pages/menu/ToppingDetailPage.jsx";
+import ToppingEditPage from "./pages/menu/ToppingEditPage.jsx";
 import KioskPage from "./pages/KioskPage.jsx";
 import RolesPage from "./pages/RolesPage.jsx";
 import EmployeesPage from "./pages/EmployeesPage.jsx";
@@ -118,6 +120,26 @@ export default function App() {
                   <RequireAuth>
                     <RequireRole roles={["COO"]}>
                       <CategoryEditPage />
+                    </RequireRole>
+                  </RequireAuth>
+                ),
+              },
+              {
+                pattern: "/chain/menu/topping-detail",
+                render: () => (
+                  <RequireAuth>
+                    <RequireRole roles={["COO"]}>
+                      <ToppingDetailPage />
+                    </RequireRole>
+                  </RequireAuth>
+                ),
+              },
+              {
+                pattern: "/chain/menu/topping-edit",
+                render: () => (
+                  <RequireAuth>
+                    <RequireRole roles={["COO"]}>
+                      <ToppingEditPage />
                     </RequireRole>
                   </RequireAuth>
                 ),
