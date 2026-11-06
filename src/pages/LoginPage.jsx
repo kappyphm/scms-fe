@@ -59,9 +59,9 @@ export default function LoginPage() {
       </p>
 
       {status === "restoring" ? (
-        <p className="text-muted-scms">
+        <div className="text-muted-scms">
           <Spinner size="sm" className="me-2" /> Đang khôi phục phiên đăng nhập…
-        </p>
+        </div>
       ) : (
         <Form onSubmit={handleSubmit} noValidate>
           <FormField
@@ -123,6 +123,12 @@ export default function LoginPage() {
               </>
             )}
           </Button>
+
+          <div className="text-center mt-3">
+            <button type="button" className="link-btn" onClick={() => navigate("/kiosk")}>
+              Chuyển sang Kiosk chấm công
+            </button>
+          </div>
         </Form>
       )}
     </AuthLayout>
