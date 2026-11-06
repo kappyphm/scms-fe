@@ -583,6 +583,259 @@
   color: var(--ink);
 }
 
+/* ---------- Kiosk chấm công SCR-02 (prototype views-auth kiosk) ---------- */
+.kiosk {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(430px, 0.85fr);
+  background: var(--paper);
+}
+
+@media (max-width: 900px) {
+  .kiosk {
+    grid-template-columns: 1fr;
+  }
+}
+
+.kiosk-left {
+  background: var(--ink);
+  color: var(--surface);
+  padding: 40px 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 32px;
+  position: relative;
+  overflow: hidden;
+}
+
+.kiosk-left::after {
+  content: "";
+  position: absolute;
+  width: 520px;
+  height: 520px;
+  border: 1px solid #3d3833;
+  border-radius: 50%;
+  left: -200px;
+  bottom: -220px;
+}
+
+.kiosk-clock-wrap {
+  position: relative;
+  z-index: 1;
+}
+
+.kiosk-clock-wrap .time {
+  font-size: clamp(58px, 8vw, 104px);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.05em;
+  font-variant-numeric: tabular-nums;
+}
+
+.kiosk-clock-wrap .date {
+  font-size: 16px;
+  color: #c9c1b7;
+  margin-top: 12px;
+  text-transform: capitalize;
+}
+
+.kiosk-clock-wrap .server-note {
+  font-size: 11px;
+  color: #9d958c;
+  margin-top: 6px;
+}
+
+.kiosk-reader {
+  border: 1px solid #3d3833;
+  border-radius: var(--radius-md);
+  padding: 16px;
+  max-width: 420px;
+  position: relative;
+  z-index: 1;
+}
+
+.kiosk-reader__status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #d8d2c8;
+}
+
+.kiosk-reader__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #a8b0a2;
+  flex: none;
+}
+
+.kiosk-reader p {
+  font-size: 11px;
+  color: #9d958c;
+  margin-top: 6px;
+}
+
+.kiosk-reader .form-control {
+  background: #2c2925;
+  border-color: #4a4642;
+  color: var(--surface);
+  margin-top: 10px;
+}
+
+.kiosk-reader .form-control::placeholder {
+  color: #9d958c;
+}
+
+.kiosk-right {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+}
+
+.kiosk-panel {
+  width: 100%;
+  max-width: 440px;
+}
+
+.kiosk-panel h1 {
+  font-size: 24px;
+  letter-spacing: -0.02em;
+}
+
+.kiosk-panel > p {
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 4px;
+  margin-bottom: 20px;
+}
+
+.pin-display {
+  min-height: 58px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin: 12px 0;
+}
+
+.pin-dot {
+  width: 13px;
+  height: 13px;
+  border: 1px solid var(--line-strong);
+  border-radius: 50%;
+}
+
+.pin-dot.filled {
+  background: var(--ink);
+  border-color: var(--ink);
+}
+
+.numpad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.numpad button {
+  min-height: 58px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  font-size: 20px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+
+.numpad button:hover {
+  background: var(--paper-2);
+  border-color: var(--line-strong);
+}
+
+.numpad button[data-key="C"] {
+  font-size: 16px;
+  color: var(--muted);
+}
+
+.numpad button[data-key="OK"] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--surface);
+  font-size: 13px;
+  letter-spacing: 0.05em;
+}
+
+.numpad button[data-key="OK"]:hover {
+  background: var(--accent-dark);
+}
+
+.numpad button:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.result-banner {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  padding: 14px;
+  margin-top: 16px;
+  min-height: 76px;
+}
+
+.result-banner__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.result-banner__mark {
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--surface);
+  font-size: 11px;
+  flex: none;
+}
+
+.result-banner__meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3px 12px;
+  margin-top: 8px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.result-banner__meta strong {
+  color: var(--ink-2);
+  font-weight: 600;
+}
+
+.kiosk-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 18px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
 /* ---------- Report filters / stat lines (prototype TAB-06, báo cáo) ---------- */
 .report-filters {
   display: flex;

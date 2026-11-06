@@ -9,6 +9,7 @@ import LoginPage from "./pages/LoginPage.jsx";
 import RoleHomePage from "./pages/RoleHomePage.jsx";
 import MenuPage from "./pages/MenuPage.jsx";
 import ProductEditPage from "./pages/menu/ProductEditPage.jsx";
+import KioskPage from "./pages/KioskPage.jsx";
 import RolesPage from "./pages/RolesPage.jsx";
 import EmployeesPage from "./pages/EmployeesPage.jsx";
 import EmployeeEditPage from "./pages/EmployeeEditPage.jsx";
@@ -51,6 +52,7 @@ export default function App() {
             routes={[
               { pattern: "/", render: () => <RootDispatch /> },
               { pattern: "/login", render: () => <LoginPage /> },
+              { pattern: "/kiosk", render: () => <KioskPage /> },
               {
                 pattern: "/chain/overview",
                 render: () => (
