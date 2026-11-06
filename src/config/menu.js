@@ -8,6 +8,7 @@ export const APP_MENU = [
   {
     group: "Vận hành",
     items: [
+      { key: "pos", label: "Bán hàng (POS)", path: "/pos", permission: PERMISSIONS.POS_OPERATE },
       { key: "branch-overview", label: "Tổng quan chi nhánh", path: "/branch/overview", permission: PERMISSIONS.REPORT_VIEW },
       { key: "chain-overview", label: "Tổng quan chuỗi", path: "/chain/overview", permission: PERMISSIONS.REPORT_VIEW },
     ],
