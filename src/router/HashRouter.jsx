@@ -4,33 +4,48 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 // Đường dẫn dạng "#/chain/menu" -> path "/chain/menu".
 // Giữ ở tầng common để mọi màn hình dùng chung một cơ chế điều hướng.
 
-const RouterContext = createContext({ path: "/", navigate: () => {} });
+const RouterContext = createContext({ path: "/", query: {}, navigate: () => {} });
 
-function pathFromHash() {
+// Tách path và query: "#/chain/menu/edit?id=3" -> path "/chain/menu/edit",
+// query { id: "3" } — cùng quy ước điều hướng của prototype.
+function parseHash() {
+  const raw = window.location.hash.replace(/^#/, "");
+  const full = !raw ? "/" : raw.startsWith("/") ? raw : `/${raw}`;
+  const qIndex = full.indexOf("?");
+  if (qIndex < 0) return { path: full, query: {} };
+  const query = {};
+  for (const [k, v] of new URLSearchParams(full.slice(qIndex + 1))) query[k] = v;
+  return { path: full.slice(0, qIndex) || "/", query };
+}
+
+function fullFromHash() {
   const raw = window.location.hash.replace(/^#/, "");
   if (!raw) return "/";
   return raw.startsWith("/") ? raw : `/${raw}`;
 }
 
 export function HashRouter({ children }) {
-  const [path, setPath] = useState(() => pathFromHash());
+  const [route, setRoute] = useState(() => parseHash());
 
   useEffect(() => {
-    const onChange = () => setPath(pathFromHash());
+    const onChange = () => setRoute(parseHash());
     window.addEventListener("hashchange", onChange);
     return () => window.removeEventListener("hashchange", onChange);
   }, []);
 
   const navigate = useCallback((to) => {
     const target = to.startsWith("/") ? to : `/${to}`;
-    if (pathFromHash() === target) {
-      setPath(target);
+    if (fullFromHash() === target) {
+      setRoute(parseHash());
     } else {
       window.location.hash = target;
     }
   }, []);
 
-  const value = useMemo(() => ({ path, navigate }), [path, navigate]);
+  const value = useMemo(
+    () => ({ path: route.path, query: route.query, navigate }),
+    [route, navigate],
+  );
   return <RouterContext.Provider value={value}>{children}</RouterContext.Provider>;
 }
 
