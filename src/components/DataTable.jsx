@@ -8,9 +8,10 @@ import Icon from "./Icon.jsx";
 //
 // columns: [{ key, header, render(row), numeric, width }]
 // pagination: { page, totalPages, onChange(nextPage) } (page bắt đầu từ 1)
-export default function DataTable({ columns, rows, rowKey, loading = false, emptyMessage = "Không có dữ liệu.", pagination = null }) {
+export default function DataTable({ columns, rows, rowKey, loading = false, emptyMessage = "Không có dữ liệu.", pagination = null, toolbar = null }) {
   return (
     <div className="scms-panel">
+      {toolbar ? <div className="data-table-toolbar">{toolbar}</div> : null}
       <div className="table-responsive">
         <Table hover>
           <thead>

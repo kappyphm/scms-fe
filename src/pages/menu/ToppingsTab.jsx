@@ -155,19 +155,20 @@ export default function ToppingsTab() {
 
   return (
     <>
-      <div className="d-flex gap-2 mb-3">
-        <div className="flex-grow-1" />
-        <Button variant="primary" onClick={openCreate}>
-          + Thêm topping
-        </Button>
-      </div>
-
       <DataTable
         columns={columns}
         rows={rows}
         rowKey={(r) => r.id}
         loading={loading}
         emptyMessage="Chưa có topping nào."
+        toolbar={
+          <>
+            <div className="flex-grow-1" />
+            <Button variant="primary" onClick={openCreate}>
+              Thêm topping
+            </Button>
+          </>
+        }
       />
 
       <Modal show={formOpen} onHide={() => !saving && setFormOpen(false)} centered>
