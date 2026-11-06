@@ -1,7 +1,12 @@
 import { useEffect } from "react";
+import { Spinner } from "react-bootstrap";
 import { HashRouter, Routes, useRouter } from "./router/HashRouter.jsx";
 import { ToastProvider } from "./components/ToastContext.jsx";
-import { AuthProvider } from "./auth/AuthContext.jsx";
+import { AuthProvider, useAuth } from "./auth/AuthContext.jsx";
+import { RequireAuth } from "./auth/guards.jsx";
+import { landingPath } from "./auth/landing.js";
+import LoginPage from "./pages/LoginPage.jsx";
+import RoleHomePage from "./pages/RoleHomePage.jsx";
 import {
   ShowcaseAdminPage,
   ShowcaseAuthPage,
@@ -10,14 +15,22 @@ import {
 } from "./showcase/ShowcasePage.jsx";
 import SessionShowcasePage from "./showcase/SessionShowcasePage.jsx";
 
-// Giai đoạn nền tảng (FE-01 + FE-02): route "/" tạm điều hướng về showcase.
-// Màn hình đăng nhập (FE-03) sẽ thay thế điểm vào này.
-function RootRedirect() {
+// Điểm vào "/": đã đăng nhập -> trang đích theo vai trò (SCR-03);
+// chưa đăng nhập -> SCR-01 Đăng nhập.
+function RootDispatch() {
+  const { status, user } = useAuth();
   const { navigate } = useRouter();
+
   useEffect(() => {
-    navigate("/_showcase");
-  }, [navigate]);
-  return null;
+    if (status === "authenticated" && user) navigate(landingPath({ user }));
+    else if (status === "anonymous") navigate("/login");
+  }, [status, user, navigate]);
+
+  return (
+    <div className="d-flex align-items-center justify-content-center" style={{ minHeight: "60vh" }}>
+      <Spinner className="me-2" /> Đang tải…
+    </div>
+  );
 }
 
 export default function App() {
@@ -27,14 +40,39 @@ export default function App() {
         <AuthProvider>
           <Routes
             routes={[
-              { pattern: "/", render: () => <RootRedirect /> },
+              { pattern: "/", render: () => <RootDispatch /> },
+              { pattern: "/login", render: () => <LoginPage /> },
+              {
+                pattern: "/chain/overview",
+                render: () => (
+                  <RequireAuth>
+                    <RoleHomePage title="Tổng quan chuỗi" screenCode="SCR-10" />
+                  </RequireAuth>
+                ),
+              },
+              {
+                pattern: "/branch/overview",
+                render: () => (
+                  <RequireAuth>
+                    <RoleHomePage title="Tổng quan chi nhánh" screenCode="SCR-07" />
+                  </RequireAuth>
+                ),
+              },
+              {
+                pattern: "/pos",
+                render: () => (
+                  <RequireAuth>
+                    <RoleHomePage title="Bán hàng" screenCode="SCR-04" />
+                  </RequireAuth>
+                ),
+              },
               { pattern: "/_showcase", render: () => <ShowcaseAdminPage /> },
               { pattern: "/_showcase/session", render: () => <SessionShowcasePage /> },
               { pattern: "/_showcase/auth", render: () => <ShowcaseAuthPage /> },
               { pattern: "/_showcase/kiosk", render: () => <ShowcaseKioskPage /> },
               { pattern: "/_showcase/task", render: () => <ShowcaseTaskPage /> },
             ]}
-            fallback={<ShowcaseAdminPage />}
+            fallback={<RootDispatch />}
           />
         </AuthProvider>
       </ToastProvider>
