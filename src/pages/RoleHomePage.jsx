@@ -2,8 +2,10 @@ import AdminLayout from "../layouts/AdminLayout.jsx";
 import PageHeader from "../components/PageHeader.jsx";
 import { RouteLink } from "../router/HashRouter.jsx";
 import { useAuth } from "../auth/AuthContext.jsx";
+import { roleLabel } from "../auth/landing.js";
 import { buildMenu } from "../config/menu.js";
 import SessionHeaderRight from "../components/SessionHeader.jsx";
+import Icon from "../components/Icon.jsx";
 
 // Trang đích sau đăng nhập theo vai trò (landing SCR-10 / SCR-07 / SCR-04).
 // Nội dung: thông tin phiên thật + lối vào các chức năng theo quyền.
@@ -15,7 +17,13 @@ export default function RoleHomePage({ title, screenCode }) {
   const headerRight = <SessionHeaderRight />;
 
   return (
-    <AdminLayout menu={menu} branchName={user?.branchName || undefined} headerRight={headerRight} screenCode={screenCode}>
+    <AdminLayout
+      menu={menu}
+      branchName={user?.branchName || undefined}
+      headerRight={headerRight}
+      userName={user?.fullName}
+      userRole={roleLabel(user?.role)}
+    >
       <PageHeader title={title} screenCode={screenCode} description={`Xin chào ${user?.fullName || ""}. Chọn chức năng để bắt đầu làm việc.`} />
       {menu.length === 0 ? (
         <div className="scms-panel p-4">
@@ -28,7 +36,7 @@ export default function RoleHomePage({ title, screenCode }) {
           <div key={section.group} className="mb-4">
             <div
               className="text-muted-scms mb-2"
-              style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.05em", textTransform: "uppercase" }}
+              style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase" }}
             >
               {section.group}
             </div>
@@ -41,7 +49,7 @@ export default function RoleHomePage({ title, screenCode }) {
                   style={{ borderTop: idx === 0 ? "none" : "1px solid var(--line)", color: "var(--ink)" }}
                 >
                   <span style={{ fontWeight: 600 }}>{item.label}</span>
-                  <span className="text-muted-scms">→</span>
+                  <span className="text-muted-scms d-inline-flex"><Icon name="arrowRight" size={15} /></span>
                 </RouteLink>
               ))}
             </div>

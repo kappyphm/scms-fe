@@ -48,7 +48,7 @@ export function ShowcaseAdminPage() {
         title="Design system"
         screenCode="FE-01"
         description="Components chuẩn theo tài liệu thiết kế của prototype."
-        actions={<Button className="btn-accent" onClick={() => toast.success("Toast mẫu: thao tác thành công.")}>Hành động chính</Button>}
+        actions={<Button variant="primary" onClick={() => toast.success("Toast mẫu: thao tác thành công.")}>Hành động chính</Button>}
       />
 
       <div className="mb-4">
@@ -67,7 +67,7 @@ export function ShowcaseAdminPage() {
             <h2 className="mb-3">Nút bấm</h2>
             <div className="d-flex gap-2 flex-wrap">
               <Button variant="primary">Nút chính (ink)</Button>
-              <Button className="btn-accent">Hành động chính (accent)</Button>
+              <Button variant="primary">Hành động chính (accent)</Button>
               <Button variant="outline-secondary">Nút phụ</Button>
               <Button variant="danger">Hành động phá hủy</Button>
               <Button variant="primary" disabled>
@@ -189,7 +189,7 @@ export function ShowcaseTaskPage() {
       actions={
         <>
           <Button variant="outline-secondary">Hủy</Button>
-          <Button className="btn-accent" onClick={() => toast.success("Task shell: nút lưu ở thanh sticky.")}>
+          <Button variant="primary" onClick={() => toast.success("Task shell: nút lưu ở thanh sticky.")}>
             Lưu
           </Button>
         </>

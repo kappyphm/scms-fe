@@ -6,22 +6,35 @@ export default function KpiStrip({ items = [] }) {
       {items.map((item, idx) => (
         <div
           key={item.label}
-          className="px-4 py-3"
           style={{
             minWidth: 180,
+            padding: "14px 16px",
             borderLeft: idx === 0 ? "none" : "1px solid var(--line)",
           }}
         >
           <div
             className="text-muted-scms"
-            style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.04em", textTransform: "uppercase" }}
+            style={{ fontSize: 10.5, fontWeight: 600, letterSpacing: "0.07em", textTransform: "uppercase" }}
           >
             {item.label}
           </div>
-          <div style={{ fontSize: 24, lineHeight: "32px", fontWeight: 800, fontVariantNumeric: "tabular-nums" }}>
+          <div
+            style={{
+              fontSize: 22,
+              lineHeight: 1.25,
+              marginTop: 4,
+              fontWeight: 700,
+              letterSpacing: "-0.02em",
+              fontVariantNumeric: "tabular-nums",
+            }}
+          >
             {item.value}
           </div>
-          {item.sub ? <div className="small text-muted-scms">{item.sub}</div> : null}
+          {item.sub ? (
+            <div className="text-muted-scms" style={{ fontSize: 11, marginTop: 2 }}>
+              {item.sub}
+            </div>
+          ) : null}
         </div>
       ))}
     </div>

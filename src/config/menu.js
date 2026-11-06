@@ -8,19 +8,19 @@ export const APP_MENU = [
   {
     group: "Vận hành",
     items: [
-      { key: "pos", label: "Bán hàng (POS)", path: "/pos", permission: PERMISSIONS.POS_OPERATE },
-      { key: "branch-overview", label: "Tổng quan chi nhánh", path: "/branch/overview", permission: PERMISSIONS.REPORT_VIEW },
-      { key: "chain-overview", label: "Tổng quan chuỗi", path: "/chain/overview", permission: PERMISSIONS.REPORT_VIEW },
+      { key: "pos", label: "Bán hàng (POS)", path: "/pos", icon: "pos", permission: PERMISSIONS.POS_OPERATE },
+      { key: "branch-overview", label: "Tổng quan chi nhánh", path: "/branch/overview", icon: "dashboard", permission: PERMISSIONS.REPORT_VIEW },
+      { key: "chain-overview", label: "Tổng quan chuỗi", path: "/chain/overview", icon: "dashboard", permission: PERMISSIONS.REPORT_VIEW },
     ],
   },
   {
     group: "Master data",
     items: [
-      { key: "branches", label: "Chi nhánh", path: "/chain/branches", permission: PERMISSIONS.BRANCH_MANAGE },
-      { key: "employees", label: "Nhân viên", path: "/branch/employees", permission: PERMISSIONS.EMPLOYEE_MANAGE },
-      { key: "menu", label: "Menu & sản phẩm", path: "/chain/menu", permission: PERMISSIONS.MENU_MANAGE },
-      { key: "vouchers", label: "Khuyến mãi & voucher", path: "/chain/vouchers", permission: PERMISSIONS.VOUCHER_MANAGE },
-      { key: "roles", label: "Vai trò & phân quyền", path: "/settings/roles", permission: PERMISSIONS.ROLE_ASSIGN },
+      { key: "branches", label: "Chi nhánh", path: "/chain/branches", icon: "branch", permission: PERMISSIONS.BRANCH_MANAGE },
+      { key: "employees", label: "Nhân viên", path: "/branch/employees", icon: "users", permission: PERMISSIONS.EMPLOYEE_MANAGE },
+      { key: "menu", label: "Menu & BOM", path: "/chain/menu", icon: "menu", permission: PERMISSIONS.MENU_MANAGE },
+      { key: "vouchers", label: "Khuyến mãi & voucher", path: "/chain/vouchers", icon: "tag", permission: PERMISSIONS.VOUCHER_MANAGE },
+      { key: "roles", label: "Vai trò & phân quyền", path: "/settings/roles", icon: "settings", permission: PERMISSIONS.ROLE_ASSIGN },
     ],
   },
 ];

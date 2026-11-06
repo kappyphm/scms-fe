@@ -111,7 +111,7 @@ export default function SessionShowcasePage() {
               onChange={(e) => setRememberMe(e.target.checked)}
               className="mb-3"
             />
-            <Button type="submit" className="btn-accent" disabled={busy}>
+            <Button type="submit" variant="primary" disabled={busy}>
               {busy ? "Đang đăng nhập…" : "Đăng nhập (API thật)"}
             </Button>
           </Form>
