@@ -7,6 +7,7 @@ import StatusTag from "../../components/StatusTag.jsx";
 import { useToast } from "../../components/ToastContext.jsx";
 import { categoriesApi } from "../../api/categoriesApi.js";
 import { productsApi } from "../../api/productsApi.js";
+import ProductPricingModal from "./ProductPricingModal.jsx";
 import { formatDateTime, formatVnd } from "../../lib/format.js";
 
 // Tab Sản phẩm trong màn hình Menu & sản phẩm (SCR-11 TAB-05) — UC10.
@@ -43,6 +44,7 @@ export default function ProductsTab() {
   const [saving, setSaving] = useState(false);
 
   const [confirm, setConfirm] = useState(null); // { kind: 'soft'|'hard', row }
+  const [pricingProduct, setPricingProduct] = useState(null); // FE-09: modal giá & topping
   const [busyAction, setBusyAction] = useState(false);
 
   useEffect(() => {
@@ -149,6 +151,14 @@ export default function ProductsTab() {
     { key: "defaultSize", header: "Size mặc định", render: (r) => r.defaultSize || "—" },
     { key: "price", header: "Giá bán", numeric: true, render: (r) => priceSummary(r) },
     {
+      key: "toppings",
+      header: "Topping",
+      render: (r) =>
+        (r.toppings || []).length
+          ? (r.toppings || []).map((t) => t.name).join(", ")
+          : "—",
+    },
+    {
       key: "status",
       header: "Trạng thái",
       render: (r) => <StatusTag label={STATUS_LABELS[r.status]} variant={STATUS_VARIANTS[r.status]} />,
@@ -157,9 +167,12 @@ export default function ProductsTab() {
     {
       key: "actions",
       header: "",
-      width: 210,
+      width: 300,
       render: (r) => (
         <div className="d-flex gap-1 justify-content-end">
+          <Button size="sm" variant="outline-secondary" onClick={() => setPricingProduct(r)}>
+            Giá & topping
+          </Button>
           <Button size="sm" variant="outline-secondary" onClick={() => openEdit(r)}>
             Sửa
           </Button>
@@ -176,43 +189,6 @@ export default function ProductsTab() {
 
   return (
     <>
-      <div className="d-flex gap-2 mb-3">
-        <Form.Select
-          value={categoryFilter}
-          onChange={(e) => {
-            setCategoryFilter(e.target.value);
-            setUiPage(1);
-          }}
-          style={{ maxWidth: 240 }}
-          aria-label="Lọc theo danh mục"
-        >
-          <option value="">Mọi danh mục</option>
-          {categories.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </Form.Select>
-        <Form.Select
-          value={statusFilter}
-          onChange={(e) => {
-            setStatusFilter(e.target.value);
-            setUiPage(1);
-          }}
-          style={{ maxWidth: 200 }}
-          aria-label="Lọc theo trạng thái"
-        >
-          <option value="">Mọi trạng thái</option>
-          <option value="AVAILABLE">Đang bán</option>
-          <option value="UNAVAILABLE">Tạm hết</option>
-          <option value="INACTIVE">Ngừng bán</option>
-        </Form.Select>
-        <div className="flex-grow-1" />
-        <Button variant="primary" onClick={openCreate}>
-          + Thêm sản phẩm
-        </Button>
-      </div>
-
       <DataTable
         columns={columns}
         rows={page.items}
@@ -220,6 +196,44 @@ export default function ProductsTab() {
         loading={loading}
         emptyMessage="Chưa có sản phẩm nào."
         pagination={{ page: uiPage, totalPages: page.totalPages, onChange: setUiPage }}
+        toolbar={
+          <>
+            <Form.Select
+              value={categoryFilter}
+              onChange={(e) => {
+                setCategoryFilter(e.target.value);
+                setUiPage(1);
+              }}
+              style={{ maxWidth: 240 }}
+              aria-label="Lọc theo danh mục"
+            >
+              <option value="">Mọi danh mục</option>
+              {categories.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </Form.Select>
+            <Form.Select
+              value={statusFilter}
+              onChange={(e) => {
+                setStatusFilter(e.target.value);
+                setUiPage(1);
+              }}
+              style={{ maxWidth: 200 }}
+              aria-label="Lọc theo trạng thái"
+            >
+              <option value="">Mọi trạng thái</option>
+              <option value="AVAILABLE">Đang bán</option>
+              <option value="UNAVAILABLE">Tạm hết</option>
+              <option value="INACTIVE">Ngừng bán</option>
+            </Form.Select>
+            <div className="flex-grow-1" />
+            <Button variant="primary" onClick={openCreate}>
+              Thêm sản phẩm
+            </Button>
+          </>
+        }
       />
 
       <Modal show={formOpen} onHide={() => !saving && setFormOpen(false)} centered>
@@ -295,6 +309,14 @@ export default function ProductsTab() {
           </Modal.Footer>
         </Form>
       </Modal>
+
+      {pricingProduct ? (
+        <ProductPricingModal
+          product={pricingProduct}
+          onClose={() => setPricingProduct(null)}
+          onChanged={load}
+        />
+      ) : null}
 
       <ConfirmDialog
         show={Boolean(confirm)}
