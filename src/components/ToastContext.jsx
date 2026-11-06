@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
 import { Toast, ToastContainer } from "react-bootstrap";
 
 // Toast (mục 7.8): thông báo ngắn góc phải trên, tự đóng.
@@ -22,11 +22,16 @@ export function ToastProvider({ children }) {
     }, 4500);
   }, []);
 
-  const api = {
-    success: useCallback((m) => push("success", m), [push]),
-    error: useCallback((m) => push("error", m), [push]),
-    info: useCallback((m) => push("info", m), [push]),
-  };
+  // Memo hoá api: nếu object thay đổi mỗi lần render, mọi useEffect phụ
+  // thuộc vào toast sẽ chạy lại vô hạn (đã gặp khi API list lỗi liên tục).
+  const api = useMemo(
+    () => ({
+      success: (m) => push("success", m),
+      error: (m) => push("error", m),
+      info: (m) => push("info", m),
+    }),
+    [push],
+  );
 
   const close = (id) => setToasts((prev) => prev.filter((t) => t.id !== id));
 

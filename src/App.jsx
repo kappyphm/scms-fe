@@ -3,10 +3,11 @@ import { Spinner } from "react-bootstrap";
 import { HashRouter, Routes, useRouter } from "./router/HashRouter.jsx";
 import { ToastProvider } from "./components/ToastContext.jsx";
 import { AuthProvider, useAuth } from "./auth/AuthContext.jsx";
-import { RequireAuth } from "./auth/guards.jsx";
+import { RequireAuth, RequireRole } from "./auth/guards.jsx";
 import { landingPath } from "./auth/landing.js";
 import LoginPage from "./pages/LoginPage.jsx";
 import RoleHomePage from "./pages/RoleHomePage.jsx";
+import MenuCategoriesPage from "./pages/MenuCategoriesPage.jsx";
 import {
   ShowcaseAdminPage,
   ShowcaseAuthPage,
@@ -63,6 +64,16 @@ export default function App() {
                 render: () => (
                   <RequireAuth>
                     <RoleHomePage title="Bán hàng" screenCode="SCR-04" />
+                  </RequireAuth>
+                ),
+              },
+              {
+                pattern: "/chain/menu",
+                render: () => (
+                  <RequireAuth>
+                    <RequireRole roles={["COO"]}>
+                      <MenuCategoriesPage />
+                    </RequireRole>
                   </RequireAuth>
                 ),
               },

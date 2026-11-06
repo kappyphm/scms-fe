@@ -1,37 +1,18 @@
-import { Button } from "react-bootstrap";
 import AdminLayout from "../layouts/AdminLayout.jsx";
 import PageHeader from "../components/PageHeader.jsx";
 import { RouteLink } from "../router/HashRouter.jsx";
 import { useAuth } from "../auth/AuthContext.jsx";
 import { buildMenu } from "../config/menu.js";
-import { useRouter } from "../router/HashRouter.jsx";
+import SessionHeaderRight from "../components/SessionHeader.jsx";
 
 // Trang đích sau đăng nhập theo vai trò (landing SCR-10 / SCR-07 / SCR-04).
 // Nội dung: thông tin phiên thật + lối vào các chức năng theo quyền.
 // Các màn hình tổng quan có số liệu sẽ thay thế khi backend có API báo cáo.
 export default function RoleHomePage({ title, screenCode }) {
-  const { user, logout } = useAuth();
-  const { navigate } = useRouter();
+  const { user } = useAuth();
   const menu = buildMenu(user);
 
-  const headerRight = (
-    <>
-      <span className="small text-muted-scms">
-        {user?.fullName} · {user?.role}
-        {user?.branchName ? ` · ${user.branchName}` : ""}
-      </span>
-      <Button
-        variant="outline-secondary"
-        size="sm"
-        onClick={async () => {
-          await logout();
-          navigate("/login");
-        }}
-      >
-        Đăng xuất
-      </Button>
-    </>
-  );
+  const headerRight = <SessionHeaderRight />;
 
   return (
     <AdminLayout menu={menu} branchName={user?.branchName || undefined} headerRight={headerRight} screenCode={screenCode}>
