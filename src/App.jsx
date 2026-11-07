@@ -95,10 +95,10 @@ export default function App() {
               },
               {
                 pattern: "/branch/inventory/slip",
-                render: ({ query }) => (
+                render: () => (
                   <RequireAuth>
                     <RequireRole roles={["COO", "BRANCH_MANAGER"]}>
-                      <StockSlipPage query={query} />
+                      <StockSlipPage />
                     </RequireRole>
                   </RequireAuth>
                 ),

@@ -45,8 +45,8 @@ const DISPOSE_REASONS = [
 // nhánh lấy theo ngữ cảnh đăng nhập (backend không nhận branchId
 // trong thân phiếu). Backend chưa có API tra cứu phiếu đã lập nên
 // sau khi lập, màn hình hiển thị tóm tắt phiếu từ response.
-export default function StockSlipPage({ query }) {
-  const { navigate } = useRouter();
+export default function StockSlipPage() {
+  const { query, navigate } = useRouter();
   const { user } = useAuth();
   const toast = useToast();
   const toastRef = useRef(toast);
