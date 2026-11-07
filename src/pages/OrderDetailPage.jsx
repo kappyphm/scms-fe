@@ -18,8 +18,8 @@ import { paymentsApi } from "../api/paymentsApi.js";
 // Chi tiết đơn hàng — trang chứa toàn bộ thao tác của đơn (chuẩn
 // FE-13): thông tin đơn, các dòng món, voucher, thanh toán tiền mặt /
 // VietQR (đơn PENDING) và hủy đơn kèm lý do bắt buộc (UC18).
-export default function OrderDetailPage({ query }) {
-  const { navigate } = useRouter();
+export default function OrderDetailPage() {
+  const { query, navigate } = useRouter();
   const { user } = useAuth();
   const toast = useToast();
   const menu = buildMenu(user);

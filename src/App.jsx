@@ -125,10 +125,10 @@ export default function App() {
               },
               {
                 pattern: "/branch/orders/detail",
-                render: ({ query }) => (
+                render: () => (
                   <RequireAuth>
                     <RequireRole roles={["COO", "BRANCH_MANAGER", "CASHIER"]}>
-                      <OrderDetailPage query={query} />
+                      <OrderDetailPage />
                     </RequireRole>
                   </RequireAuth>
                 ),
