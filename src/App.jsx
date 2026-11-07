@@ -18,6 +18,9 @@ import KioskPage from "./pages/KioskPage.jsx";
 import RolesPage from "./pages/RolesPage.jsx";
 import SepaySettingsPage from "./pages/SepaySettingsPage.jsx";
 import PosPage from "./pages/PosPage.jsx";
+import InventoryPage from "./pages/InventoryPage.jsx";
+import StockSlipPage from "./pages/StockSlipPage.jsx";
+import StocktakePage from "./pages/StocktakePage.jsx";
 import OrdersPage from "./pages/OrdersPage.jsx";
 import OrderDetailPage from "./pages/OrderDetailPage.jsx";
 import EmployeesPage from "./pages/EmployeesPage.jsx";
@@ -86,6 +89,36 @@ export default function App() {
                   <RequireAuth>
                     <RequireRole roles={["COO", "BRANCH_MANAGER", "CASHIER"]}>
                       <PosPage />
+                    </RequireRole>
+                  </RequireAuth>
+                ),
+              },
+              {
+                pattern: "/branch/inventory/slip",
+                render: ({ query }) => (
+                  <RequireAuth>
+                    <RequireRole roles={["COO", "BRANCH_MANAGER"]}>
+                      <StockSlipPage query={query} />
+                    </RequireRole>
+                  </RequireAuth>
+                ),
+              },
+              {
+                pattern: "/branch/inventory/stocktake",
+                render: () => (
+                  <RequireAuth>
+                    <RequireRole roles={["COO", "BRANCH_MANAGER"]}>
+                      <StocktakePage />
+                    </RequireRole>
+                  </RequireAuth>
+                ),
+              },
+              {
+                pattern: "/branch/inventory",
+                render: () => (
+                  <RequireAuth>
+                    <RequireRole roles={["COO", "BRANCH_MANAGER"]}>
+                      <InventoryPage />
                     </RequireRole>
                   </RequireAuth>
                 ),
