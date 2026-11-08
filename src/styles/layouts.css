@@ -896,3 +896,24 @@
   padding: 12px;
   border-bottom: 1px solid var(--line);
 }
+
+/* POS: rail danh mục bên trái như prototype (.pos-categories) */
+.pos-cat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 9px 12px;
+  margin-bottom: 6px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--ink);
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  text-align: left;
+}
+.pos-cat span { color: var(--muted); font-weight: 500; font-size: 12px; }
+.pos-cat.active { background: var(--ink); color: #fff; border-color: var(--ink); }
+.pos-cat.active span { color: #e8e2d8; }
