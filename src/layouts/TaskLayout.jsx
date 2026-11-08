@@ -25,7 +25,13 @@ export default function TaskLayout({
   return (
     <div className="task-shell">
       <header className="topbar">
-        <div className="topbar__brand">
+        <div
+          className="topbar__brand"
+          onClick={() => navigate("/")}
+          style={{ cursor: "pointer" }}
+          role="link"
+          title="Về trang tổng quan"
+        >
           <span className="brand-mark">SC</span>
           <span>SCMS</span>
           {user?.branchName ? <span className="topbar__branch">{user.branchName}</span> : null}
