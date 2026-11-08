@@ -4,6 +4,7 @@ import AdminLayout from "../layouts/AdminLayout.jsx";
 import PageHeader from "../components/PageHeader.jsx";
 import SessionHeaderRight from "../components/SessionHeader.jsx";
 import { useAuth } from "../auth/AuthContext.jsx";
+import { useRouter } from "../router/HashRouter.jsx";
 import { roleLabel } from "../auth/landing.js";
 import { buildMenu } from "../config/menu.js";
 import CategoriesTab from "./menu/CategoriesTab.jsx";
@@ -16,7 +17,10 @@ import RecipeTab from "./menu/RecipeTab.jsx";
 export default function MenuPage() {
   const { user } = useAuth();
   const menu = buildMenu(user);
-  const [activeTab, setActiveTab] = useState("products");
+  const { query } = useRouter();
+  const [activeTab, setActiveTab] = useState(() =>
+    ["products", "categories", "toppings", "recipe"].includes(query.tab) ? query.tab : "products",
+  );
 
   return (
     <AdminLayout
