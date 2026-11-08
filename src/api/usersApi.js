@@ -28,4 +28,12 @@ export const usersApi = {
   changeStatus(id, status) {
     return http.patch(`/users/${id}/status`, { status });
   },
+  // Gán role riêng (UC02) — chỉ COO; hiệu lực từ lần đăng nhập sau.
+  assignRole(id, roleCode) {
+    return http.put(`/users/${id}/role`, { roleCode });
+  },
+  // Đặt lại mật khẩu — backend thu hồi toàn bộ phiên của user đó.
+  resetPassword(id, password) {
+    return http.put(`/users/${id}/password`, { password });
+  },
 };
