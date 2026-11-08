@@ -1,47 +1,48 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Button, Form, Spinner } from "react-bootstrap";
-import AdminLayout from "../layouts/AdminLayout.jsx";
-import PageHeader from "../components/PageHeader.jsx";
-import SessionHeaderRight from "../components/SessionHeader.jsx";
-import StatusTag from "../components/StatusTag.jsx";
-import OrderPaymentPanel from "../components/OrderPaymentPanel.jsx";
+import { Spinner } from "react-bootstrap";
+import { RouteLink, useRouter } from "../router/HashRouter.jsx";
+import Icon from "../components/Icon.jsx";
 import { useToast } from "../components/ToastContext.jsx";
 import { useAuth } from "../auth/AuthContext.jsx";
-import { roleLabel } from "../auth/landing.js";
-import { buildMenu } from "../config/menu.js";
 import { formatVnd } from "../lib/format.js";
 import { productsApi } from "../api/productsApi.js";
 import { categoriesApi } from "../api/categoriesApi.js";
 import { branchesApi } from "../api/branchesApi.js";
 import { ordersApi } from "../api/ordersApi.js";
+import { shiftsApi } from "../api/shiftsApi.js";
+import { posCart, usePosCart, lineTotal, cartSubtotal, cartCount } from "../pos/posCartStore.js";
 
-const LEVELS = ["0%", "30%", "50%", "70%", "100%"];
-
-// SCR-04/05 — POS bán hàng tại quầy (FE-17, UC16–UC19/UC43). Bố cục
-// bám prototype views-pos: lưới món bên trái, panel "Đơn hiện tại"
-// bên phải. Tạo đơn qua POST /orders (backend tính lại tổng từ giá
-// DB); thanh toán tiền mặt/VietQR qua OrderPaymentPanel. Đơn tạo xong
-// mà chưa trả tiền vẫn ở trạng thái PENDING trong danh sách đơn hàng
-// (đơn chờ) — mở lại từ trang Đơn hàng để thanh toán tiếp.
+// SCR-04 — POS bán hàng (FE-27): chép đúng prototype views-pos.js —
+// shell riêng toàn màn hình, topbar tối (brand về trang tổng quan, chi
+// nhánh, trạng thái ca, lối sang Đơn hàng / Ca quỹ, đồng hồ, người dùng),
+// rail danh mục có số món, lưới thẻ món, panel "Đơn hiện tại". Bấm món
+// mở màn hình tuỳ chỉnh POP-01; nút Thanh toán tạo đơn ở backend rồi
+// sang màn hình thanh toán POP-02.
 export default function PosPage() {
   const { user } = useAuth();
+  const { navigate } = useRouter();
   const toast = useToast();
-  const menu = buildMenu(user);
   const toastRef = useRef(toast);
   toastRef.current = toast;
+  const { lines, voucherCode, pendingOrderId } = usePosCart();
 
   const [loading, setLoading] = useState(true);
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [branches, setBranches] = useState([]);
   const [branchId, setBranchId] = useState(user?.branchId || null);
+  const [shift, setShift] = useState(null);
   const [keyword, setKeyword] = useState("");
   const [categoryId, setCategoryId] = useState(null);
-
-  const [cart, setCart] = useState([]);
-  const [orderNote, setOrderNote] = useState("");
+  const [voucherInput, setVoucherInput] = useState(voucherCode || "");
+  const [voucherMsg, setVoucherMsg] = useState("");
   const [creating, setCreating] = useState(false);
-  const [order, setOrder] = useState(null); // OrderDetailDto sau khi tạo
+  const [clock, setClock] = useState(() => new Date());
+
+  useEffect(() => {
+    const t = setInterval(() => setClock(new Date()), 1000);
+    return () => clearInterval(t);
+  }, []);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -69,112 +70,89 @@ export default function PosPage() {
     load();
   }, [load]);
 
+  useEffect(() => {
+    if (!branchId) return;
+    let cancelled = false;
+    shiftsApi
+      .current(branchId)
+      .then((sum) => {
+        if (!cancelled) setShift(sum?.shift || null);
+      })
+      .catch(() => {
+        if (!cancelled) setShift(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [branchId]);
+
+  const branch = useMemo(() => {
+    if (user?.branchId) return { id: user.branchId, code: "", name: user.branchName || "" };
+    return branches.find((b) => b.id === branchId) || null;
+  }, [branches, branchId, user]);
+
   const visibleProducts = useMemo(() => {
     const kw = keyword.trim().toLowerCase();
     return products.filter(
-      (p) =>
-        (!categoryId || p.categoryId === categoryId) &&
-        (!kw || p.name.toLowerCase().includes(kw))
+      (p) => (!categoryId || p.categoryId === categoryId) && (!kw || p.name.toLowerCase().includes(kw))
     );
   }, [products, keyword, categoryId]);
 
-  const subtotal = useMemo(
-    () =>
-      cart.reduce(
-        (sum, l) => sum + (l.unitPrice + l.toppings.reduce((s, t) => s + t.extraPrice, 0)) * l.quantity,
-        0
-      ),
-    [cart]
-  );
+  const subtotal = cartSubtotal(lines);
+  const count = cartCount(lines);
+  const locked = Boolean(pendingOrderId);
 
-  function priceOf(product, size) {
-    const s = (product.sizes || []).find((x) => x.size === size);
-    return s ? Number(s.price) : Number(product.sizes?.[0]?.price || 0);
-  }
-
-  function addToCart(product) {
-    if (order) return;
-    const size = product.defaultSize || product.sizes?.[0]?.size || "S";
-    const defaultToppings = (product.toppings || [])
-      .filter((t) => t.isDefault)
-      .map((t) => ({ toppingId: t.toppingId, name: t.name, extraPrice: Number(t.extraPrice) }));
-    const key =
-      product.id + "|" + size + "|100%|100%|" + defaultToppings.map((t) => t.toppingId).join(",") + "|";
-    setCart((prev) => {
-      const existing = prev.find((l) => l.key === key);
-      if (existing) {
-        return prev.map((l) => (l.key === key ? { ...l, quantity: l.quantity + 1 } : l));
-      }
-      return [
-        ...prev,
-        {
-          key,
-          productId: product.id,
-          name: product.name,
-          product,
-          size,
-          quantity: 1,
-          sugarLevel: "100%",
-          iceLevel: "100%",
-          note: "",
-          toppings: defaultToppings,
-          unitPrice: priceOf(product, size),
-        },
-      ];
-    });
-  }
-
-  function updateLine(key, patch) {
-    setCart((prev) =>
-      prev.map((l) => {
-        if (l.key !== key) return l;
-        const next = { ...l, ...patch };
-        if (patch.size) next.unitPrice = priceOf(l.product, patch.size);
-        next.key =
-          next.productId + "|" + next.size + "|" + next.sugarLevel + "|" + next.iceLevel + "|" +
-          next.toppings.map((t) => t.toppingId).join(",") + "|" + (next.note || "");
-        return next;
-      })
-    );
-  }
-
-  function toggleTopping(line, topping) {
-    const has = line.toppings.some((t) => t.toppingId === topping.toppingId);
-    const toppings = has
-      ? line.toppings.filter((t) => t.toppingId !== topping.toppingId)
-      : [...line.toppings, { toppingId: topping.toppingId, name: topping.name, extraPrice: Number(topping.extraPrice) }];
-    updateLine(line.key, { toppings });
-  }
-
-  async function createOrder() {
-    if (!branchId) {
-      toast.error("Chưa chọn chi nhánh bán hàng.");
+  function openItem(product) {
+    if (locked) {
+      toast.error("Đang có đơn chờ thanh toán — hoàn tất đơn đó trước khi tạo đơn mới.");
       return;
     }
-    if (!cart.length) return;
+    navigate(`/pos/item?id=${product.id}`);
+  }
+
+  function applyVoucher() {
+    const code = voucherInput.trim().toUpperCase();
+    posCart.setVoucher(code);
+    setVoucherMsg(code ? `Mã ${code} sẽ được áp dụng khi thanh toán.` : "");
+  }
+
+  async function checkout() {
+    if (!lines.length || creating) return;
+    if (locked) {
+      navigate(`/pos/checkout?id=${pendingOrderId}`);
+      return;
+    }
+    if (!shift) {
+      toast.error("Vui lòng mở ca quỹ trước khi thanh toán.");
+      return;
+    }
     setCreating(true);
     try {
-      const payload = {
+      const order = await ordersApi.create({
         branchId,
         totalAmount: subtotal,
         discountAmount: 0,
         finalAmount: subtotal,
-        note: orderNote.trim() || null,
-        lines: cart.map((l) => ({
+        lines: lines.map((l) => ({
           productId: l.productId,
           size: l.size,
           quantity: l.quantity,
           unitPrice: l.unitPrice,
-          sugarLevel: l.sugarLevel,
-          iceLevel: l.iceLevel,
-          note: l.note.trim() || null,
-          toppingIds: l.toppings.map((t) => t.toppingId),
+          sugarLevel: l.sugar,
+          iceLevel: l.ice,
+          note: l.note || undefined,
+          toppingIds: (l.toppings || []).map((t) => t.toppingId),
         })),
-      };
-      const created = await ordersApi.create(payload);
-      const detail = await ordersApi.detail(created.id);
-      setOrder(detail);
-      toast.success(`Đã tạo đơn ${detail.receiptNo || "#" + detail.id}.`);
+      });
+      if (voucherCode) {
+        try {
+          await ordersApi.applyVoucher(order.id, voucherCode);
+        } catch (err) {
+          toast.error(`Không áp dụng được voucher: ${err.message || "mã không hợp lệ"}`);
+        }
+      }
+      posCart.setPendingOrderId(order.id);
+      navigate(`/pos/checkout?id=${order.id}`);
     } catch (err) {
       toast.error(err.message || "Không tạo được đơn hàng.");
     } finally {
@@ -182,294 +160,260 @@ export default function PosPage() {
     }
   }
 
-  function resetAll() {
-    setCart([]);
-    setOrderNote("");
-    setOrder(null);
-  }
-
-  const locked = !!order;
+  const shiftTime = shift?.openedAt || shift?.plannedStart || shift?.createdAt;
+  const shiftLabel = shift
+    ? `Ca ${shiftTime ? new Date(shiftTime).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" }) : ""}${user?.fullName ? ` · ${user.fullName}` : ""}`
+    : "Chưa mở ca";
 
   return (
-    <AdminLayout
-      menu={menu}
-      branchName={user?.branchName || undefined}
-      headerRight={<SessionHeaderRight />}
-      userName={user?.fullName}
-      userRole={roleLabel(user?.role)}
-    >
-      <PageHeader
-        title="Bán hàng tại quầy"
-        screenCode="SCR-04 · POS"
-        description="Chọn món, tạo đơn và thu tiền mặt hoặc VietQR."
-        actions={
-          !user?.branchId ? (
-            <Form.Select
+    <div className="pos-shell">
+      <div className="pos-top">
+        <div className="topbar__left">
+          <RouteLink className="brand" to="/" style={{ textDecoration: "none" }}>
+            <span className="brand__mark">SC</span>
+            <span className="brand__name">SCMS POS</span>
+          </RouteLink>
+          {user?.branchId ? (
+            <span className="topbar__branch" style={{ color: "#d8d2c8" }}>
+              {branch?.name || ""}
+            </span>
+          ) : (
+            <select
+              aria-label="Chi nhánh bán hàng"
               value={branchId || ""}
               onChange={(e) => setBranchId(Number(e.target.value))}
-              style={{ minWidth: 220 }}
-              disabled={locked}
             >
               {branches.map((b) => (
                 <option key={b.id} value={b.id}>
-                  {b.code} — {b.name}
+                  {b.code} · {b.name}
                 </option>
               ))}
-            </Form.Select>
-          ) : null
-        }
-      />
-
-      {loading ? (
-        <div className="text-center py-5">
-          <Spinner className="me-2" /> Đang tải…
+            </select>
+          )}
+          <span className="topbar__meta">
+            <Icon name="clock" size={13} /> {shiftLabel}
+          </span>
         </div>
-      ) : (
-        <div className="grid-2" style={{ gridTemplateColumns: "200px 1fr 400px", alignItems: "start" }}>
-          {/* Rail danh mục như prototype (views-pos.js): cột trái, có số món */}
-          <aside>
-            <button
-              type="button"
-              className={"pos-cat" + (!categoryId ? " active" : "")}
-              onClick={() => setCategoryId(null)}
-            >
-              Tất cả <span>{products.length}</span>
-            </button>
-            {categories.map((c) => (
-              <button
-                key={c.id}
-                type="button"
-                className={"pos-cat" + (categoryId === c.id ? " active" : "")}
-                onClick={() => setCategoryId(c.id)}
-              >
-                {c.name} <span>{products.filter((p) => p.categoryId === c.id).length}</span>
-              </button>
-            ))}
-          </aside>
+        <div className="topbar__right">
+          <RouteLink className="btn btn-sm" to="/branch/orders">
+            Đơn hàng
+          </RouteLink>
+          <RouteLink className="btn btn-sm" to="/branch/shift">
+            Ca quỹ
+          </RouteLink>
+          <span className="topbar__clock">
+            {clock.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
+          </span>
+          <span className="avatar" title={user?.fullName || ""}>
+            {(user?.fullName || "?")
+              .split(" ")
+              .slice(-2)
+              .map((x) => x[0])
+              .join("")
+              .toUpperCase()}
+          </span>
+        </div>
+      </div>
 
-          {/* Menu món */}
-          <div>
-            <div className="d-flex gap-2 flex-wrap mb-3 align-items-center">
-              <h2 style={{ fontSize: 17, margin: 0 }}>
-                {categoryId ? categories.find((c) => c.id === categoryId)?.name || "Toàn bộ menu" : "Toàn bộ menu"}
-              </h2>
-              <span className="text-muted" style={{ fontSize: 13 }}>
-                {visibleProducts.length} món khả dụng
-              </span>
-              <Form.Control
-                placeholder="Tìm món…"
-                value={keyword}
-                onChange={(e) => setKeyword(e.target.value)}
-                style={{ maxWidth: 220, marginLeft: "auto" }}
-              />
-            </div>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))",
-                gap: 10,
-              }}
+      <div className="pos-body">
+        <aside className="pos-categories">
+          <button type="button" className={"cat" + (!categoryId ? " active" : "")} onClick={() => setCategoryId(null)}>
+            Tất cả <span>{products.length}</span>
+          </button>
+          {categories.map((c) => (
+            <button
+              key={c.id}
+              type="button"
+              className={"cat" + (categoryId === c.id ? " active" : "")}
+              onClick={() => setCategoryId(c.id)}
             >
-              {visibleProducts.map((p) => (
-                <button
-                  key={p.id}
-                  type="button"
-                  className="scms-panel panel-pad text-start"
-                  onClick={() => addToCart(p)}
-                  disabled={locked}
-                  style={{ cursor: locked ? "not-allowed" : "pointer" }}
-                >
-                  <div style={{ fontWeight: 600 }}>{p.name}</div>
-                  <div className="text-muted" style={{ fontSize: 12 }}>
-                    {p.categoryName || ""}
-                  </div>
-                  <div className="mt-1">
-                    <strong>{formatVnd(priceOf(p, p.defaultSize || p.sizes?.[0]?.size))}</strong>
-                    <span className="text-muted"> · size {p.defaultSize || p.sizes?.[0]?.size || "—"}</span>
-                  </div>
-                </button>
-              ))}
+              {c.name} <span>{products.filter((p) => p.categoryId === c.id).length}</span>
+            </button>
+          ))}
+          {user?.role !== "CASHIER" ? (
+            <>
+              <div className="divider mt-16 mb-12" />
+              <RouteLink className="nav-item" to="/branch/inventory">
+                <span className="nav-item__icon">
+                  <Icon name="inventory" size={16} />
+                </span>
+                <span>Kho nguyên liệu</span>
+              </RouteLink>
+              <RouteLink className="nav-item" to="/">
+                <span className="nav-item__icon">
+                  <Icon name="dashboard" size={16} />
+                </span>
+                <span>Chi nhánh</span>
+              </RouteLink>
+            </>
+          ) : null}
+        </aside>
+
+        <section className="pos-products">
+          {!loading && !shift ? (
+            <div className="notice notice--warn pos-notice">
+              <span className="notice__icon">!</span>
+              <div>
+                <strong>Chưa mở ca quỹ.</strong> Bạn vẫn có thể tạo đơn tạm, nhưng cần{" "}
+                <RouteLink className="text-accent" to="/branch/shift">
+                  mở ca
+                </RouteLink>{" "}
+                trước khi thanh toán tiền mặt.
+              </div>
+            </div>
+          ) : null}
+          <div className="pos-search">
+            <Icon name="search" size={18} />
+            <input
+              className="input input-lg"
+              placeholder="Tìm tên hoặc mã món…"
+              value={keyword}
+              onChange={(e) => setKeyword(e.target.value)}
+            />
+          </div>
+          <div className="pos-products-head">
+            <h2>{categoryId ? categories.find((c) => c.id === categoryId)?.name || "Toàn bộ menu" : "Toàn bộ menu"}</h2>
+            <span className="small muted">
+              {visibleProducts.length} món khả dụng ·{" "}
+              {new Date().toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric" })}
+            </span>
+          </div>
+          {loading ? (
+            <div className="text-center py-5">
+              <Spinner className="me-2" /> Đang tải…
+            </div>
+          ) : (
+            <div className="product-grid">
+              {visibleProducts.map((p) => {
+                const minPrice = Math.min(...(p.sizes || []).map((s) => Number(s.price)));
+                return (
+                  <button key={p.id} type="button" className="product" onClick={() => openItem(p)}>
+                    <div className="product__image">
+                      {p.name
+                        .split(" ")
+                        .map((x) => x[0])
+                        .slice(0, 2)
+                        .join("")
+                        .toUpperCase()}
+                    </div>
+                    <div className="product__body">
+                      <div className="product__name">{p.name}</div>
+                      <div className="small muted">{p.categoryName || ""}</div>
+                      <div className="product__price">Từ {formatVnd(minPrice)}</div>
+                    </div>
+                  </button>
+                );
+              })}
               {visibleProducts.length === 0 ? (
-                <div className="text-muted">Không có món nào đang bán trong nhóm này.</div>
+                <div className="text-muted">Không tìm thấy món. Thử từ khóa khác hoặc chọn danh mục khác.</div>
               ) : null}
+            </div>
+          )}
+        </section>
+
+        <aside className="pos-cart">
+          <div className="cart-head">
+            <div className="flex justify-between items-center">
+              <h2>Đơn hiện tại</h2>
+              <span className="badge-count">{count}</span>
+            </div>
+            <div className="meta">
+              {user?.fullName || ""} · {shift ? shiftLabel.replace("Ca ", "Ca ") : "Chưa mở ca"}
             </div>
           </div>
 
-          {/* Đơn hiện tại */}
-          <div className="scms-panel panel-pad" style={{ position: "sticky", top: 12 }}>
-            <div className="panel-head">
+          {locked ? (
+            <div className="notice notice--accent" style={{ margin: "10px 16px 0" }}>
+              <span className="notice__icon">i</span>
               <div>
-                <h2>Đơn hiện tại</h2>
-                <p>
-                  {order
-                    ? `${order.receiptNo || "Đơn #" + order.id} · ${order.lines?.length || 0} dòng`
-                    : `${cart.reduce((s, l) => s + l.quantity, 0)} món trong giỏ`}
-                </p>
+                <strong>Đơn đang chờ thanh toán.</strong> Hoàn tất ở màn hình thanh toán; nếu bỏ, đơn vẫn nằm
+                trong danh sách Đơn hàng ở trạng thái chờ.
               </div>
-              {order ? (
-                <StatusTag
-                  status={order.status}
-                  variant={order.status === "PAID" ? "dark" : "warn"}
-                  label={order.status === "PAID" ? "Đã thanh toán" : "Chờ thanh toán"}
-                />
-              ) : null}
             </div>
+          ) : null}
 
-            {!order ? (
-              <>
-                <div style={{ maxHeight: 380, overflowY: "auto" }}>
-                  {cart.length === 0 ? (
-                    <div className="text-muted py-3">Giỏ hàng trống — chọn món từ menu để bắt đầu đơn mới.</div>
-                  ) : (
-                    cart.map((l) => {
-                      const lineTotal =
-                        (l.unitPrice + l.toppings.reduce((s, t) => s + t.extraPrice, 0)) * l.quantity;
-                      return (
-                        <div key={l.key} style={{ borderBottom: "1px solid var(--line)", padding: "8px 0" }}>
-                          <div className="d-flex justify-content-between">
-                            <strong>{l.name}</strong>
-                            <strong>{formatVnd(lineTotal)}</strong>
-                          </div>
-                          <div className="d-flex gap-2 mt-1 flex-wrap">
-                            <Form.Select
-                              size="sm"
-                              value={l.size}
-                              onChange={(e) => updateLine(l.key, { size: e.target.value })}
-                              style={{ width: 76 }}
-                            >
-                              {(l.product.sizes || []).map((s) => (
-                                <option key={s.size} value={s.size}>
-                                  {s.size} · {formatVnd(s.price)}
-                                </option>
-                              ))}
-                            </Form.Select>
-                            <Form.Select
-                              size="sm"
-                              value={l.sugarLevel}
-                              onChange={(e) => updateLine(l.key, { sugarLevel: e.target.value })}
-                              style={{ width: 108 }}
-                            >
-                              {LEVELS.map((v) => (
-                                <option key={v} value={v}>
-                                  Đường {v}
-                                </option>
-                              ))}
-                            </Form.Select>
-                            <Form.Select
-                              size="sm"
-                              value={l.iceLevel}
-                              onChange={(e) => updateLine(l.key, { iceLevel: e.target.value })}
-                              style={{ width: 96 }}
-                            >
-                              {LEVELS.map((v) => (
-                                <option key={v} value={v}>
-                                  Đá {v}
-                                </option>
-                              ))}
-                            </Form.Select>
-                            <div className="d-flex align-items-center gap-1">
-                              <Button
-                                size="sm"
-                                variant="outline-secondary"
-                                onClick={() =>
-                                  updateLine(l.key, { quantity: Math.max(1, l.quantity - 1) })
-                                }
-                              >
-                                −
-                              </Button>
-                              <span style={{ minWidth: 22, textAlign: "center" }}>{l.quantity}</span>
-                              <Button
-                                size="sm"
-                                variant="outline-secondary"
-                                onClick={() => updateLine(l.key, { quantity: l.quantity + 1 })}
-                              >
-                                +
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline-danger"
-                                onClick={() => setCart((prev) => prev.filter((x) => x.key !== l.key))}
-                              >
-                                Xoá
-                              </Button>
-                            </div>
-                          </div>
-                          {(l.product.toppings || []).length ? (
-                            <div className="d-flex gap-2 flex-wrap mt-1">
-                              {l.product.toppings.map((t) => (
-                                <Form.Check
-                                  key={t.toppingId}
-                                  type="checkbox"
-                                  id={`tp-${l.key}-${t.toppingId}`}
-                                  label={`${t.name} +${formatVnd(t.extraPrice)}`}
-                                  checked={l.toppings.some((x) => x.toppingId === t.toppingId)}
-                                  onChange={() => toggleTopping(l, t)}
-                                />
-                              ))}
-                            </div>
-                          ) : null}
-                          <Form.Control
-                            size="sm"
-                            className="mt-1"
-                            placeholder="Ghi chú dòng…"
-                            value={l.note}
-                            onChange={(e) => updateLine(l.key, { note: e.target.value })}
-                          />
-                        </div>
-                      );
-                    })
-                  )}
-                </div>
-                <Form.Control
-                  className="mt-2"
-                  placeholder="Ghi chú đơn (tuỳ chọn)"
-                  value={orderNote}
-                  onChange={(e) => setOrderNote(e.target.value)}
-                />
-                <div className="stat-line mt-2">
-                  <span className="text-muted">Tạm tính</span>
-                  <strong style={{ fontSize: 17 }}>{formatVnd(subtotal)}</strong>
-                </div>
-                <Button
-                  className="w-100 mt-2"
-                  variant="primary"
-                  onClick={createOrder}
-                  disabled={creating || !cart.length}
-                >
-                  {creating ? <Spinner size="sm" className="me-2" /> : null}
-                  Tạo đơn & thanh toán
-                </Button>
-              </>
-            ) : (
-              <>
-                <div style={{ maxHeight: 240, overflowY: "auto" }}>
-                  {(order.lines || []).map((l) => (
-                    <div key={l.id} className="d-flex justify-content-between" style={{ padding: "4px 0" }}>
-                      <span>
-                        {l.productName} ({l.size}) × {l.quantity}
-                        <span className="text-muted">
-                          {" "}
-                          · Đường {l.sugarLevel || "—"} · Đá {l.iceLevel || "—"}
-                          {l.toppings?.length
-                            ? " · " + l.toppings.map((t) => t.toppingName || t.name).filter(Boolean).join(", ")
-                            : ""}
+          <div className="cart-lines">
+            {lines.length ? (
+              lines.map((l) => {
+                const opts = [l.size, l.sugar, l.ice, ...(l.toppings || []).map((t) => t.name)]
+                  .filter(Boolean)
+                  .join(" · ");
+                return (
+                  <div className="cart-line" key={l.key}>
+                    <div className="cart-line__main">
+                      <div className="cart-line__name">{l.name}</div>
+                      <div className="cart-line__opts">
+                        {opts || "Mặc định"}
+                        {l.note ? ` · ${l.note}` : ""}
+                      </div>
+                      <div className="cart-line__tools">
+                        <span className="qty">
+                          <button type="button" aria-label="Giảm" disabled={locked} onClick={() => posCart.setQuantity(l.key, l.quantity - 1)}>
+                            −
+                          </button>
+                          <span>{l.quantity}</span>
+                          <button type="button" aria-label="Tăng" disabled={locked} onClick={() => posCart.setQuantity(l.key, l.quantity + 1)}>
+                            +
+                          </button>
                         </span>
-                      </span>
-                      <strong>{formatVnd(l.lineTotal)}</strong>
+                        <button
+                          type="button"
+                          className="link-btn"
+                          disabled={locked}
+                          onClick={() => navigate(`/pos/item?id=${l.productId}&line=${encodeURIComponent(l.key)}`)}
+                        >
+                          Sửa
+                        </button>
+                        <button type="button" className="link-btn" disabled={locked} onClick={() => posCart.removeLine(l.key)}>
+                          Xóa
+                        </button>
+                      </div>
                     </div>
-                  ))}
-                </div>
-                <OrderPaymentPanel order={order} onOrderChanged={setOrder} />
-                <div className="d-flex gap-2 mt-3">
-                  <Button variant="outline-secondary" onClick={resetAll}>
-                    {order.status === "PENDING" ? "Để đơn chờ & làm đơn mới" : "Đơn mới"}
-                  </Button>
-                </div>
-              </>
+                    <div className="cart-line__price">{formatVnd(lineTotal(l))}</div>
+                  </div>
+                );
+              })
+            ) : (
+              <div className="text-muted" style={{ padding: "18px 0", fontSize: 12 }}>
+                Giỏ hàng trống. Chọn món từ menu để bắt đầu đơn mới.
+              </div>
             )}
           </div>
-        </div>
-      )}
-    </AdminLayout>
+
+          <div className="cart-foot">
+            <div className="voucher-row">
+              <input
+                className="input"
+                placeholder="Mã voucher"
+                value={voucherInput}
+                onChange={(e) => setVoucherInput(e.target.value)}
+                disabled={locked}
+              />
+              <button type="button" className="btn btn-sm" onClick={applyVoucher} disabled={locked}>
+                Áp dụng
+              </button>
+            </div>
+            {voucherMsg ? <div className="small mb-8" style={{ color: "var(--muted)" }}>{voucherMsg}</div> : null}
+            <div className="summary-line">
+              <span>Tạm tính ({count} món)</span>
+              <strong>{formatVnd(subtotal)}</strong>
+            </div>
+            <div className="summary-line">
+              <span>Giảm giá</span>
+              <strong>{voucherCode ? "Tính khi thanh toán" : "—"}</strong>
+            </div>
+            <div className="summary-line total">
+              <span>Tổng thanh toán</span>
+              <strong>{formatVnd(subtotal)}</strong>
+            </div>
+            <div className="cart-actions" style={{ gridTemplateColumns: "1fr" }}>
+              <button type="button" className="btn btn-primary" disabled={!lines.length || creating} onClick={checkout}>
+                {creating ? "Đang tạo đơn…" : locked ? "Tiếp tục thanh toán" : "Thanh toán"}
+              </button>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
   );
 }
