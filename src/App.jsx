@@ -16,6 +16,7 @@ import ToppingDetailPage from "./pages/menu/ToppingDetailPage.jsx";
 import ToppingEditPage from "./pages/menu/ToppingEditPage.jsx";
 import KioskPage from "./pages/KioskPage.jsx";
 import RolesPage from "./pages/RolesPage.jsx";
+import SepaySettingsPage from "./pages/SepaySettingsPage.jsx";
 import EmployeesPage from "./pages/EmployeesPage.jsx";
 import EmployeeEditPage from "./pages/EmployeeEditPage.jsx";
 import BranchesPage from "./pages/BranchesPage.jsx";
@@ -200,6 +201,16 @@ export default function App() {
                   <RequireAuth>
                     <RequireRole roles={["COO", "BRANCH_MANAGER"]}>
                       <EmployeeEditPage />
+                    </RequireRole>
+                  </RequireAuth>
+                ),
+              },
+              {
+                pattern: "/settings/sepay",
+                render: () => (
+                  <RequireAuth>
+                    <RequireRole roles={["COO"]}>
+                      <SepaySettingsPage />
                     </RequireRole>
                   </RequireAuth>
                 ),
