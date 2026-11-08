@@ -5,7 +5,9 @@ import AdminLayout from "../layouts/AdminLayout.jsx";
 import PageHeader from "../components/PageHeader.jsx";
 import SessionHeaderRight from "../components/SessionHeader.jsx";
 import StatusTag from "../components/StatusTag.jsx";
+import FormField from "../components/FormField.jsx";
 import OrderPaymentPanel from "../components/OrderPaymentPanel.jsx";
+import { refundsApi } from "../api/refundsApi.js";
 import { ORDER_STATUS_META } from "./OrdersPage.jsx";
 import { useToast } from "../components/ToastContext.jsx";
 import { useAuth } from "../auth/AuthContext.jsx";
@@ -31,6 +33,9 @@ export default function OrderDetailPage() {
   const [order, setOrder] = useState(null);
   const [payInfo, setPayInfo] = useState(null);
   const [showCancel, setShowCancel] = useState(false);
+  const [showRefund, setShowRefund] = useState(false);
+  const [refundForm, setRefundForm] = useState({ amount: "", reason: "", managerPin: "" });
+  const [refundSaving, setRefundSaving] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
   const [cancelling, setCancelling] = useState(false);
   const [cancelError, setCancelError] = useState(null);
@@ -40,7 +45,7 @@ export default function OrderDetailPage() {
     try {
       const detail = await ordersApi.detail(id);
       setOrder(detail);
-      if (detail.status === "PAID") {
+      if (detail.status === "PAID" || detail.status === "PARTIALLY_REFUNDED") {
         try {
           setPayInfo(await paymentsApi.getStatus(id));
         } catch {
@@ -74,6 +79,26 @@ export default function OrderDetailPage() {
       setCancelError(err.message || "Không hủy được đơn hàng.");
     } finally {
       setCancelling(false);
+    }
+  }
+
+  async function doRefund() {
+    setRefundSaving(true);
+    try {
+      await refundsApi.create({
+        orderId: id,
+        amount: Number(refundForm.amount),
+        reason: refundForm.reason.trim(),
+        managerPin: refundForm.managerPin,
+      });
+      toast.success("Đã hoàn tiền. Số tiền đã xuất khỏi két của ca đang mở.");
+      setShowRefund(false);
+      setRefundForm({ amount: "", reason: "", managerPin: "" });
+      load();
+    } catch (err) {
+      toast.error(err.message || "Không hoàn được tiền.");
+    } finally {
+      setRefundSaving(false);
     }
   }
 
@@ -241,10 +266,66 @@ export default function OrderDetailPage() {
                   </Button>
                 </>
               ) : null}
+              {order.status === "PAID" ? (
+                <Button
+                  variant="outline-secondary"
+                  className="w-100 mt-3"
+                  onClick={() => setShowRefund(true)}
+                >
+                  Hoàn tiền
+                </Button>
+              ) : null}
             </div>
           </aside>
         </div>
       )}
+
+      <Modal show={showRefund} onHide={() => setShowRefund(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Hoàn tiền cho khách</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <p className="text-muted-scms">
+            Tiền hoàn được xuất từ két của ca đang mở và cần PIN của quản lý chi nhánh xác nhận.
+            Đơn sẽ chuyển trạng thái Hoàn một phần hoặc Đã hoàn tiền tùy số tiền.
+          </p>
+          <FormField label="Số tiền hoàn (VNĐ)" required>
+            <Form.Control
+              type="number"
+              min="1"
+              step="1000"
+              value={refundForm.amount}
+              onChange={(e) => setRefundForm({ ...refundForm, amount: e.target.value })}
+              placeholder={order ? `Tối đa ${Number(order.finalAmount || 0).toLocaleString("vi-VN")}` : ""}
+            />
+          </FormField>
+          <FormField label="Lý do hoàn" required>
+            <Form.Control
+              value={refundForm.reason}
+              onChange={(e) => setRefundForm({ ...refundForm, reason: e.target.value })}
+            />
+          </FormField>
+          <FormField label="PIN của quản lý chi nhánh" required>
+            <Form.Control
+              type="password"
+              inputMode="numeric"
+              autoComplete="off"
+              value={refundForm.managerPin}
+              onChange={(e) => setRefundForm({ ...refundForm, managerPin: e.target.value })}
+            />
+          </FormField>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="outline-secondary" onClick={() => setShowRefund(false)}>Hủy</Button>
+          <Button
+            className="btn-accent"
+            disabled={refundSaving || !refundForm.amount || !refundForm.reason.trim() || !refundForm.managerPin}
+            onClick={doRefund}
+          >
+            {refundSaving ? <Spinner size="sm" /> : "Xác nhận hoàn tiền"}
+          </Button>
+        </Modal.Footer>
+      </Modal>
 
       <Modal show={showCancel} onHide={() => setShowCancel(false)} centered>
         <Modal.Header closeButton>

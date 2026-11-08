@@ -10,6 +10,7 @@ export const APP_MENU = [
     items: [
       { key: "pos", label: "Bán hàng (POS)", path: "/pos", icon: "pos", permission: PERMISSIONS.POS_OPERATE },
       { key: "orders", label: "Đơn hàng", path: "/branch/orders", icon: "orders", permission: PERMISSIONS.ORDER_VIEW },
+      { key: "shift", label: "Ca & két tiền", path: "/branch/shift", icon: "wallet", permission: PERMISSIONS.SHIFT_OPEN },
       { key: "inventory", label: "Kho", path: "/branch/inventory", icon: "inventory", permission: PERMISSIONS.INVENTORY_MANAGE },
       { key: "branch-overview", label: "Tổng quan chi nhánh", path: "/branch/overview", icon: "dashboard", permission: PERMISSIONS.REPORT_VIEW },
       { key: "chain-overview", label: "Tổng quan chuỗi", path: "/chain/overview", icon: "dashboard", permission: PERMISSIONS.REPORT_VIEW },
@@ -25,6 +26,7 @@ export const APP_MENU = [
       { key: "vouchers", label: "Khuyến mãi & voucher", path: "/chain/vouchers", icon: "tag", permission: PERMISSIONS.VOUCHER_MANAGE },
       { key: "roles", label: "Vai trò & phân quyền", path: "/settings/roles", icon: "settings", permission: PERMISSIONS.ROLE_ASSIGN },
       { key: "sepay", label: "SePay & thanh toán", path: "/settings/sepay", icon: "wallet", permission: PERMISSIONS.SETTINGS_MANAGE },
+      { key: "sync", label: "Đồng bộ chuỗi", path: "/settings/sync", icon: "settings", permission: PERMISSIONS.SETTINGS_MANAGE },
     ],
   },
 ];

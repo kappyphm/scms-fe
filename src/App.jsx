@@ -6,7 +6,7 @@ import { AuthProvider, useAuth } from "./auth/AuthContext.jsx";
 import { RequireAuth, RequireRole } from "./auth/guards.jsx";
 import { landingPath } from "./auth/landing.js";
 import LoginPage from "./pages/LoginPage.jsx";
-import RoleHomePage from "./pages/RoleHomePage.jsx";
+import { BranchOverviewPage, ChainOverviewPage } from "./pages/OverviewPages.jsx";
 import MenuPage from "./pages/MenuPage.jsx";
 import ProductEditPage from "./pages/menu/ProductEditPage.jsx";
 import ProductDetailPage from "./pages/menu/ProductDetailPage.jsx";
@@ -17,10 +17,12 @@ import ToppingEditPage from "./pages/menu/ToppingEditPage.jsx";
 import KioskPage from "./pages/KioskPage.jsx";
 import RolesPage from "./pages/RolesPage.jsx";
 import SepaySettingsPage from "./pages/SepaySettingsPage.jsx";
+import SyncSettingsPage from "./pages/SyncSettingsPage.jsx";
 import PosPage from "./pages/PosPage.jsx";
 import InventoryPage from "./pages/InventoryPage.jsx";
 import StockSlipPage from "./pages/StockSlipPage.jsx";
 import StocktakePage from "./pages/StocktakePage.jsx";
+import ShiftPage from "./pages/ShiftPage.jsx";
 import PayrollPage from "./pages/PayrollPage.jsx";
 import OrdersPage from "./pages/OrdersPage.jsx";
 import OrderDetailPage from "./pages/OrderDetailPage.jsx";
@@ -72,7 +74,7 @@ export default function App() {
                 pattern: "/chain/overview",
                 render: () => (
                   <RequireAuth>
-                    <RoleHomePage title="Tổng quan chuỗi" screenCode="SCR-10" />
+                    <ChainOverviewPage />
                   </RequireAuth>
                 ),
               },
@@ -80,7 +82,7 @@ export default function App() {
                 pattern: "/branch/overview",
                 render: () => (
                   <RequireAuth>
-                    <RoleHomePage title="Tổng quan chi nhánh" screenCode="SCR-07" />
+                    <BranchOverviewPage />
                   </RequireAuth>
                 ),
               },
@@ -120,6 +122,16 @@ export default function App() {
                   <RequireAuth>
                     <RequireRole roles={["COO", "BRANCH_MANAGER"]}>
                       <InventoryPage />
+                    </RequireRole>
+                  </RequireAuth>
+                ),
+              },
+              {
+                pattern: "/branch/shift",
+                render: () => (
+                  <RequireAuth>
+                    <RequireRole roles={["COO", "BRANCH_MANAGER", "CASHIER"]}>
+                      <ShiftPage />
                     </RequireRole>
                   </RequireAuth>
                 ),
@@ -270,6 +282,16 @@ export default function App() {
                   <RequireAuth>
                     <RequireRole roles={["COO", "BRANCH_MANAGER"]}>
                       <EmployeeEditPage />
+                    </RequireRole>
+                  </RequireAuth>
+                ),
+              },
+              {
+                pattern: "/settings/sync",
+                render: () => (
+                  <RequireAuth>
+                    <RequireRole roles={["COO"]}>
+                      <SyncSettingsPage />
                     </RequireRole>
                   </RequireAuth>
                 ),
