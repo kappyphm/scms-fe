@@ -10,6 +10,8 @@ import RoleHomePage from "./pages/RoleHomePage.jsx";
 import MenuPage from "./pages/MenuPage.jsx";
 import ProductEditPage from "./pages/menu/ProductEditPage.jsx";
 import ProductDetailPage from "./pages/menu/ProductDetailPage.jsx";
+import CategoryDetailPage from "./pages/menu/CategoryDetailPage.jsx";
+import CategoryEditPage from "./pages/menu/CategoryEditPage.jsx";
 import KioskPage from "./pages/KioskPage.jsx";
 import RolesPage from "./pages/RolesPage.jsx";
 import EmployeesPage from "./pages/EmployeesPage.jsx";
@@ -96,6 +98,26 @@ export default function App() {
                   <RequireAuth>
                     <RequireRole roles={["COO"]}>
                       <ProductDetailPage />
+                    </RequireRole>
+                  </RequireAuth>
+                ),
+              },
+              {
+                pattern: "/chain/menu/category-detail",
+                render: () => (
+                  <RequireAuth>
+                    <RequireRole roles={["COO"]}>
+                      <CategoryDetailPage />
+                    </RequireRole>
+                  </RequireAuth>
+                ),
+              },
+              {
+                pattern: "/chain/menu/category-edit",
+                render: () => (
+                  <RequireAuth>
+                    <RequireRole roles={["COO"]}>
+                      <CategoryEditPage />
                     </RequireRole>
                   </RequireAuth>
                 ),
