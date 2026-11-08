@@ -17,6 +17,7 @@ import ToppingEditPage from "./pages/menu/ToppingEditPage.jsx";
 import KioskPage from "./pages/KioskPage.jsx";
 import RolesPage from "./pages/RolesPage.jsx";
 import SepaySettingsPage from "./pages/SepaySettingsPage.jsx";
+import SyncSettingsPage from "./pages/SyncSettingsPage.jsx";
 import PosPage from "./pages/PosPage.jsx";
 import InventoryPage from "./pages/InventoryPage.jsx";
 import StockSlipPage from "./pages/StockSlipPage.jsx";
@@ -259,6 +260,16 @@ export default function App() {
                   <RequireAuth>
                     <RequireRole roles={["COO", "BRANCH_MANAGER"]}>
                       <EmployeeEditPage />
+                    </RequireRole>
+                  </RequireAuth>
+                ),
+              },
+              {
+                pattern: "/settings/sync",
+                render: () => (
+                  <RequireAuth>
+                    <RequireRole roles={["COO"]}>
+                      <SyncSettingsPage />
                     </RequireRole>
                   </RequireAuth>
                 ),

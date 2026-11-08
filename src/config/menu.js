@@ -24,6 +24,7 @@ export const APP_MENU = [
       { key: "vouchers", label: "Khuyến mãi & voucher", path: "/chain/vouchers", icon: "tag", permission: PERMISSIONS.VOUCHER_MANAGE },
       { key: "roles", label: "Vai trò & phân quyền", path: "/settings/roles", icon: "settings", permission: PERMISSIONS.ROLE_ASSIGN },
       { key: "sepay", label: "SePay & thanh toán", path: "/settings/sepay", icon: "wallet", permission: PERMISSIONS.SETTINGS_MANAGE },
+      { key: "sync", label: "Đồng bộ chuỗi", path: "/settings/sync", icon: "settings", permission: PERMISSIONS.SETTINGS_MANAGE },
     ],
   },
 ];
