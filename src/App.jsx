@@ -22,6 +22,7 @@ import InventoryPage from "./pages/InventoryPage.jsx";
 import StockSlipPage from "./pages/StockSlipPage.jsx";
 import StocktakePage from "./pages/StocktakePage.jsx";
 import ShiftPage from "./pages/ShiftPage.jsx";
+import PayrollPage from "./pages/PayrollPage.jsx";
 import OrdersPage from "./pages/OrdersPage.jsx";
 import OrderDetailPage from "./pages/OrderDetailPage.jsx";
 import EmployeesPage from "./pages/EmployeesPage.jsx";
@@ -130,6 +131,16 @@ export default function App() {
                   <RequireAuth>
                     <RequireRole roles={["COO", "BRANCH_MANAGER", "CASHIER"]}>
                       <ShiftPage />
+                    </RequireRole>
+                  </RequireAuth>
+                ),
+              },
+              {
+                pattern: "/branch/payroll",
+                render: () => (
+                  <RequireAuth>
+                    <RequireRole roles={["COO", "BRANCH_MANAGER"]}>
+                      <PayrollPage />
                     </RequireRole>
                   </RequireAuth>
                 ),
