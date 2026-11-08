@@ -28,4 +28,21 @@ export const productsApi = {
   hardDelete(id) {
     return http.delete(`/products/${id}/permanent`);
   },
+  // --- FE-09: size/giá + topping của sản phẩm (UC11) ---
+  listSizes(id) {
+    return http.get(`/products/${id}/sizes`);
+  },
+  // Upsert theo size: { size: 'S'|'M'|'L', price: số nguyên VND 0..100.000.000 }
+  upsertSize(id, payload) {
+    return http.post(`/products/${id}/sizes`, payload);
+  },
+  // Xoá giá một size; backend trả 422 DEFAULT_SIZE_IN_USE nếu size đang
+  // là size mặc định của sản phẩm.
+  deleteSize(id, size) {
+    return http.delete(`/products/${id}/sizes/${size}`);
+  },
+  // Thay toàn bộ topping áp dụng: items = [{ toppingId, extraPrice, isDefault }]
+  replaceToppings(id, items) {
+    return http.put(`/products/${id}/toppings`, { items });
+  },
 };

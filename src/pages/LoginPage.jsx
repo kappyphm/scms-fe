@@ -59,9 +59,9 @@ export default function LoginPage() {
       </p>
 
       {status === "restoring" ? (
-        <p className="text-muted-scms">
+        <div className="text-muted-scms">
           <Spinner size="sm" className="me-2" /> Đang khôi phục phiên đăng nhập…
-        </p>
+        </div>
       ) : (
         <Form onSubmit={handleSubmit} noValidate>
           <FormField
