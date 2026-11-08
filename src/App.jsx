@@ -19,6 +19,8 @@ import RolesPage from "./pages/RolesPage.jsx";
 import SepaySettingsPage from "./pages/SepaySettingsPage.jsx";
 import SyncSettingsPage from "./pages/SyncSettingsPage.jsx";
 import PosPage from "./pages/PosPage.jsx";
+import PosItemPage from "./pages/PosItemPage.jsx";
+import PosCheckoutPage from "./pages/PosCheckoutPage.jsx";
 import InventoryPage from "./pages/InventoryPage.jsx";
 import StockSlipPage from "./pages/StockSlipPage.jsx";
 import StocktakePage from "./pages/StocktakePage.jsx";
@@ -92,6 +94,26 @@ export default function App() {
                   <RequireAuth>
                     <RequireRole roles={["COO", "BRANCH_MANAGER", "CASHIER"]}>
                       <PosPage />
+                    </RequireRole>
+                  </RequireAuth>
+                ),
+              },
+              {
+                pattern: "/pos/item",
+                render: () => (
+                  <RequireAuth>
+                    <RequireRole roles={["COO", "BRANCH_MANAGER", "CASHIER"]}>
+                      <PosItemPage />
+                    </RequireRole>
+                  </RequireAuth>
+                ),
+              },
+              {
+                pattern: "/pos/checkout",
+                render: () => (
+                  <RequireAuth>
+                    <RequireRole roles={["COO", "BRANCH_MANAGER", "CASHIER"]}>
+                      <PosCheckoutPage />
                     </RequireRole>
                   </RequireAuth>
                 ),
