@@ -189,43 +189,6 @@ export default function ProductsTab() {
 
   return (
     <>
-      <div className="d-flex gap-2 mb-3">
-        <Form.Select
-          value={categoryFilter}
-          onChange={(e) => {
-            setCategoryFilter(e.target.value);
-            setUiPage(1);
-          }}
-          style={{ maxWidth: 240 }}
-          aria-label="Lọc theo danh mục"
-        >
-          <option value="">Mọi danh mục</option>
-          {categories.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </Form.Select>
-        <Form.Select
-          value={statusFilter}
-          onChange={(e) => {
-            setStatusFilter(e.target.value);
-            setUiPage(1);
-          }}
-          style={{ maxWidth: 200 }}
-          aria-label="Lọc theo trạng thái"
-        >
-          <option value="">Mọi trạng thái</option>
-          <option value="AVAILABLE">Đang bán</option>
-          <option value="UNAVAILABLE">Tạm hết</option>
-          <option value="INACTIVE">Ngừng bán</option>
-        </Form.Select>
-        <div className="flex-grow-1" />
-        <Button variant="primary" onClick={openCreate}>
-          + Thêm sản phẩm
-        </Button>
-      </div>
-
       <DataTable
         columns={columns}
         rows={page.items}
@@ -233,6 +196,44 @@ export default function ProductsTab() {
         loading={loading}
         emptyMessage="Chưa có sản phẩm nào."
         pagination={{ page: uiPage, totalPages: page.totalPages, onChange: setUiPage }}
+        toolbar={
+          <>
+            <Form.Select
+              value={categoryFilter}
+              onChange={(e) => {
+                setCategoryFilter(e.target.value);
+                setUiPage(1);
+              }}
+              style={{ maxWidth: 240 }}
+              aria-label="Lọc theo danh mục"
+            >
+              <option value="">Mọi danh mục</option>
+              {categories.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </Form.Select>
+            <Form.Select
+              value={statusFilter}
+              onChange={(e) => {
+                setStatusFilter(e.target.value);
+                setUiPage(1);
+              }}
+              style={{ maxWidth: 200 }}
+              aria-label="Lọc theo trạng thái"
+            >
+              <option value="">Mọi trạng thái</option>
+              <option value="AVAILABLE">Đang bán</option>
+              <option value="UNAVAILABLE">Tạm hết</option>
+              <option value="INACTIVE">Ngừng bán</option>
+            </Form.Select>
+            <div className="flex-grow-1" />
+            <Button variant="primary" onClick={openCreate}>
+              Thêm sản phẩm
+            </Button>
+          </>
+        }
       />
 
       <Modal show={formOpen} onHide={() => !saving && setFormOpen(false)} centered>

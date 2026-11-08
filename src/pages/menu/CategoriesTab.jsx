@@ -183,35 +183,6 @@ export default function CategoriesTab() {
 
   return (
     <>
-      <div className="d-flex gap-2 mb-3">
-        <Form.Control
-          type="search"
-          placeholder="Tìm theo mã hoặc tên danh mục…"
-          value={keyword}
-          onChange={(e) => {
-            setKeyword(e.target.value);
-            setUiPage(1);
-          }}
-          style={{ maxWidth: 320 }}
-        />
-        <Form.Select
-          value={statusFilter}
-          onChange={(e) => {
-            setStatusFilter(e.target.value);
-            setUiPage(1);
-          }}
-          style={{ maxWidth: 200 }}
-        >
-          <option value="">Mọi trạng thái</option>
-          <option value="ACTIVE">Đang hoạt động</option>
-          <option value="INACTIVE">Ngừng hoạt động</option>
-        </Form.Select>
-        <div className="flex-grow-1" />
-        <Button variant="primary" onClick={openCreate}>
-          + Thêm danh mục
-        </Button>
-      </div>
-
       <DataTable
         columns={columns}
         rows={page.items}
@@ -219,6 +190,37 @@ export default function CategoriesTab() {
         loading={loading}
         emptyMessage="Chưa có danh mục nào."
         pagination={{ page: uiPage, totalPages: page.totalPages, onChange: setUiPage }}
+        toolbar={
+          <>
+            <Form.Control
+              type="search"
+              placeholder="Tìm theo mã hoặc tên danh mục…"
+              value={keyword}
+              onChange={(e) => {
+                setKeyword(e.target.value);
+                setUiPage(1);
+              }}
+              style={{ maxWidth: 320 }}
+            />
+            <Form.Select
+              value={statusFilter}
+              onChange={(e) => {
+                setStatusFilter(e.target.value);
+                setUiPage(1);
+              }}
+              style={{ maxWidth: 200 }}
+              aria-label="Lọc theo trạng thái"
+            >
+              <option value="">Mọi trạng thái</option>
+              <option value="ACTIVE">Đang hoạt động</option>
+              <option value="INACTIVE">Ngừng hoạt động</option>
+            </Form.Select>
+            <div className="flex-grow-1" />
+            <Button variant="primary" onClick={openCreate}>
+              Thêm danh mục
+            </Button>
+          </>
+        }
       />
 
       <Modal show={formOpen} onHide={() => !saving && setFormOpen(false)} centered>
