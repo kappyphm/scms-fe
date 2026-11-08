@@ -17,6 +17,9 @@ import ToppingEditPage from "./pages/menu/ToppingEditPage.jsx";
 import KioskPage from "./pages/KioskPage.jsx";
 import RolesPage from "./pages/RolesPage.jsx";
 import SepaySettingsPage from "./pages/SepaySettingsPage.jsx";
+import PosPage from "./pages/PosPage.jsx";
+import OrdersPage from "./pages/OrdersPage.jsx";
+import OrderDetailPage from "./pages/OrderDetailPage.jsx";
 import EmployeesPage from "./pages/EmployeesPage.jsx";
 import EmployeeEditPage from "./pages/EmployeeEditPage.jsx";
 import BranchesPage from "./pages/BranchesPage.jsx";
@@ -81,7 +84,29 @@ export default function App() {
                 pattern: "/pos",
                 render: () => (
                   <RequireAuth>
-                    <RoleHomePage title="Bán hàng" screenCode="SCR-04" />
+                    <RequireRole roles={["COO", "BRANCH_MANAGER", "CASHIER"]}>
+                      <PosPage />
+                    </RequireRole>
+                  </RequireAuth>
+                ),
+              },
+              {
+                pattern: "/branch/orders/detail",
+                render: () => (
+                  <RequireAuth>
+                    <RequireRole roles={["COO", "BRANCH_MANAGER", "CASHIER"]}>
+                      <OrderDetailPage />
+                    </RequireRole>
+                  </RequireAuth>
+                ),
+              },
+              {
+                pattern: "/branch/orders",
+                render: () => (
+                  <RequireAuth>
+                    <RequireRole roles={["COO", "BRANCH_MANAGER", "CASHIER"]}>
+                      <OrdersPage />
+                    </RequireRole>
                   </RequireAuth>
                 ),
               },
