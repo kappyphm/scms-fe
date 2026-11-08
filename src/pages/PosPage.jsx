@@ -225,27 +225,37 @@ export default function PosPage() {
           <Spinner className="me-2" /> Đang tải…
         </div>
       ) : (
-        <div className="grid-2" style={{ gridTemplateColumns: "1fr 400px", alignItems: "start" }}>
+        <div className="grid-2" style={{ gridTemplateColumns: "200px 1fr 400px", alignItems: "start" }}>
+          {/* Rail danh mục như prototype (views-pos.js): cột trái, có số món */}
+          <aside>
+            <button
+              type="button"
+              className={"pos-cat" + (!categoryId ? " active" : "")}
+              onClick={() => setCategoryId(null)}
+            >
+              Tất cả <span>{products.length}</span>
+            </button>
+            {categories.map((c) => (
+              <button
+                key={c.id}
+                type="button"
+                className={"pos-cat" + (categoryId === c.id ? " active" : "")}
+                onClick={() => setCategoryId(c.id)}
+              >
+                {c.name} <span>{products.filter((p) => p.categoryId === c.id).length}</span>
+              </button>
+            ))}
+          </aside>
+
           {/* Menu món */}
           <div>
             <div className="d-flex gap-2 flex-wrap mb-3 align-items-center">
-              <Button
-                size="sm"
-                variant={!categoryId ? "primary" : "outline-secondary"}
-                onClick={() => setCategoryId(null)}
-              >
-                Tất cả
-              </Button>
-              {categories.map((c) => (
-                <Button
-                  key={c.id}
-                  size="sm"
-                  variant={categoryId === c.id ? "primary" : "outline-secondary"}
-                  onClick={() => setCategoryId(c.id)}
-                >
-                  {c.name}
-                </Button>
-              ))}
+              <h2 style={{ fontSize: 17, margin: 0 }}>
+                {categoryId ? categories.find((c) => c.id === categoryId)?.name || "Toàn bộ menu" : "Toàn bộ menu"}
+              </h2>
+              <span className="text-muted" style={{ fontSize: 13 }}>
+                {visibleProducts.length} món khả dụng
+              </span>
               <Form.Control
                 placeholder="Tìm món…"
                 value={keyword}

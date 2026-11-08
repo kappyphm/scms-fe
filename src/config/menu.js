@@ -1,42 +1,78 @@
-import { PERMISSIONS } from "./permissions.js";
+// Điều hướng theo đúng prototype (NS.ui.sidebar trong core.js): ba kiểu nav
+// theo VAI TRÒ — chain (COO), branch (Quản lý chi nhánh), cashier (Thu ngân) —
+// giữ đúng nhóm, nhãn và thứ tự của prototype.
+//
+// Không lọc theo permission: prototype không lọc, và dữ liệu quyền phía
+// backend không cấp POS_OPERATE / SHIFT_OPEN cho bất kỳ vai trò nào đăng
+// nhập được (chỉ Thu ngân có, mà Thu ngân không có tài khoản đăng nhập),
+// khiến POS và Ca quỹ biến mất khỏi mọi luồng màn hình. Các mục prototype
+// có nhưng backend chưa có luồng (Báo cáo, Audit Logs, Phê duyệt) không
+// đưa vào menu để tránh mục chết.
+const NAVS = {
+  chain: [
+    {
+      group: "Tổng quan",
+      items: [
+        { key: "chain-overview", label: "Tổng quan chuỗi", path: "/chain/overview", icon: "dashboard" },
+        { key: "branch-overview", label: "Tổng quan chi nhánh", path: "/branch/overview", icon: "branch" },
+      ],
+    },
+    {
+      group: "Master data",
+      items: [
+        { key: "menu", label: "Menu & BOM", path: "/chain/menu", icon: "menu" },
+        { key: "vouchers", label: "Khuyến mãi", path: "/chain/vouchers", icon: "tag" },
+        { key: "branches", label: "Chi nhánh & Manager", path: "/chain/branches", icon: "branch" },
+        { key: "sync", label: "Đồng bộ chuỗi", path: "/settings/sync", icon: "sync" },
+      ],
+    },
+    {
+      group: "Hệ thống",
+      items: [
+        { key: "sepay", label: "SePay & thanh toán", path: "/settings/sepay", icon: "wallet" },
+        { key: "roles", label: "Vai trò & phân quyền", path: "/settings/roles", icon: "settings" },
+      ],
+    },
+  ],
+  branch: [
+    {
+      group: "Vận hành",
+      items: [
+        { key: "branch-overview", label: "Tổng quan chi nhánh", path: "/branch/overview", icon: "dashboard" },
+        { key: "pos", label: "POS bán hàng", path: "/pos", icon: "pos" },
+        { key: "orders", label: "Đơn hàng", path: "/branch/orders", icon: "orders" },
+        { key: "shift", label: "Ca quỹ", path: "/branch/shift", icon: "cash" },
+      ],
+    },
+    {
+      group: "Quản lý chi nhánh",
+      items: [
+        { key: "inventory", label: "Kho nguyên liệu", path: "/branch/inventory", icon: "inventory" },
+        { key: "employees", label: "Nhân sự & ca", path: "/branch/employees", icon: "users" },
+        { key: "payroll", label: "Bảng lương", path: "/branch/payroll", icon: "wallet" },
+      ],
+    },
+  ],
+  cashier: [
+    {
+      group: "Bán hàng",
+      items: [
+        { key: "pos", label: "POS bán hàng", path: "/pos", icon: "pos" },
+        { key: "orders", label: "Đơn hàng", path: "/branch/orders", icon: "orders" },
+        { key: "shift", label: "Ca quỹ", path: "/branch/shift", icon: "cash" },
+      ],
+    },
+  ],
+};
 
-// Cấu trúc menu chính của Admin shell. Mục hiển thị khi người dùng có quyền
-// tương ứng trong `permissions` của /auth/me (đúng chủ đích PermissionCatalog
-// của backend). Các route nghiệp vụ sẽ được các issue màn hình tương ứng
-// hoàn thiện; khai báo tập trung tại đây để menu nhất quán.
-export const APP_MENU = [
-  {
-    group: "Vận hành",
-    items: [
-      { key: "pos", label: "Bán hàng (POS)", path: "/pos", icon: "pos", permission: PERMISSIONS.POS_OPERATE },
-      { key: "orders", label: "Đơn hàng", path: "/branch/orders", icon: "orders", permission: PERMISSIONS.ORDER_VIEW },
-      { key: "shift", label: "Ca & két tiền", path: "/branch/shift", icon: "wallet", permission: PERMISSIONS.SHIFT_OPEN },
-      { key: "inventory", label: "Kho", path: "/branch/inventory", icon: "inventory", permission: PERMISSIONS.INVENTORY_MANAGE },
-      { key: "branch-overview", label: "Tổng quan chi nhánh", path: "/branch/overview", icon: "dashboard", permission: PERMISSIONS.REPORT_VIEW },
-      { key: "chain-overview", label: "Tổng quan chuỗi", path: "/chain/overview", icon: "dashboard", permission: PERMISSIONS.REPORT_VIEW },
-    ],
-  },
-  {
-    group: "Master data",
-    items: [
-      { key: "branches", label: "Chi nhánh", path: "/chain/branches", icon: "branch", permission: PERMISSIONS.BRANCH_MANAGE },
-      { key: "employees", label: "Nhân viên", path: "/branch/employees", icon: "users", permission: PERMISSIONS.EMPLOYEE_MANAGE },
-      { key: "payroll", label: "Bảng lương", path: "/branch/payroll", icon: "wallet", permission: PERMISSIONS.PAYROLL_MANAGE },
-      { key: "menu", label: "Menu & BOM", path: "/chain/menu", icon: "menu", permission: PERMISSIONS.MENU_MANAGE },
-      { key: "vouchers", label: "Khuyến mãi & voucher", path: "/chain/vouchers", icon: "tag", permission: PERMISSIONS.VOUCHER_MANAGE },
-      { key: "roles", label: "Vai trò & phân quyền", path: "/settings/roles", icon: "settings", permission: PERMISSIONS.ROLE_ASSIGN },
-      { key: "sepay", label: "SePay & thanh toán", path: "/settings/sepay", icon: "wallet", permission: PERMISSIONS.SETTINGS_MANAGE },
-      { key: "sync", label: "Đồng bộ chuỗi", path: "/settings/sync", icon: "settings", permission: PERMISSIONS.SETTINGS_MANAGE },
-    ],
-  },
-];
-
-// Lọc menu theo permissions của người dùng hiện tại; nhóm rỗng bị loại.
+// Menu theo vai trò của người dùng hiện tại (trường `role` từ /auth/me).
+// Nhân viên quầy (WAITER/BARISTA) không có tài khoản đăng nhập — bề mặt của
+// họ là kiosk — nên không có menu shell.
 export function buildMenu(user) {
   if (!user) return [];
-  const permissions = Array.isArray(user.permissions) ? user.permissions : [];
-  return APP_MENU.map((section) => ({
-    ...section,
-    items: section.items.filter((item) => !item.permission || permissions.includes(item.permission)),
-  })).filter((section) => section.items.length > 0);
+  const role = String(user.role || user.roleCode || "").toUpperCase();
+  if (role === "COO") return NAVS.chain;
+  if (role === "BRANCH_MANAGER") return NAVS.branch;
+  if (role === "CASHIER") return NAVS.cashier;
+  return [];
 }
