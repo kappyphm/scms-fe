@@ -53,12 +53,6 @@ export default function TaskLayout({
           </button>
         ) : null}
         <div className="task-head__main">
-          {screenCode ? (
-            <div className="page-code">
-              <span>{screenCode}</span>
-              {codeLabel ? <b>{codeLabel}</b> : null}
-            </div>
-          ) : null}
           <h1>{title}</h1>
           {subtitle ? <p>{subtitle}</p> : null}
         </div>
