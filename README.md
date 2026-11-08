@@ -45,3 +45,15 @@ Lệnh khác: `npm run build`, `npm run preview`, `npm run lint`.
   (SCR-10: COO, SCR-07: Branch Manager, SCR-04: Cashier).
 - Lưu ý tạm thời: không gửi param `keyword` lên `GET /api/v1/products` (backend đang lỗi 500 ở
   đường này); tìm kiếm ở danh mục/voucher/nhân viên/chi nhánh bình thường.
+
+## Kiosk chấm công (SCR-02, FE-04)
+
+- Mở tại `#/kiosk` (link "Chuyển sang Kiosk chấm công" ở trang đăng nhập). Kiosk không cần
+  đăng nhập: chọn chi nhánh một lần bằng `?branchId=<id>` trên URL hoặc nhập ID chi nhánh
+  tại máy (lưu ở localStorage của máy kiosk), chọn nhân viên, nhập PIN 4-6 số trên numpad
+  (OK = check-in khi chưa vào ca, check-out khi đang trong ca) hoặc quẹt thẻ RFID
+  (ô mã thẻ ở panel trái, đầu đọc hoạt động như bàn phím).
+- **Cảnh báo vận hành:** các endpoint `/api/v1/attendance/**` của backend hiện đang public
+  (chưa kiểm tra kiosk key) và PIN chưa được giới hạn số lần thử. Chỉ triển khai kiosk
+  trong mạng LAN của cửa hàng, không phơi địa chỉ kiosk/backend ra Internet cho tới khi
+  backend bổ sung xác thực kiosk và rate-limit cho PIN.

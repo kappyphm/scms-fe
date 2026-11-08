@@ -123,6 +123,12 @@ export default function LoginPage() {
               </>
             )}
           </Button>
+
+          <div className="text-center mt-3">
+            <button type="button" className="link-btn" onClick={() => navigate("/kiosk")}>
+              Chuyển sang Kiosk chấm công
+            </button>
+          </div>
         </Form>
       )}
     </AuthLayout>
