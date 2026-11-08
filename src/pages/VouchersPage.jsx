@@ -5,7 +5,6 @@ import PageHeader from "../components/PageHeader.jsx";
 import SessionHeaderRight from "../components/SessionHeader.jsx";
 import DataTable from "../components/DataTable.jsx";
 import StatusTag from "../components/StatusTag.jsx";
-import ConfirmDialog from "../components/ConfirmDialog.jsx";
 import { useToast } from "../components/ToastContext.jsx";
 import { useAuth } from "../auth/AuthContext.jsx";
 import { useRouter } from "../router/HashRouter.jsx";
@@ -23,6 +22,9 @@ const STATUS_LABELS = { ACTIVE: "Đang hoạt động", INACTIVE: "Ngừng hoạ
 // Mã / Loại giảm / Giá trị / Đơn tối thiểu / Đã dùng / Hiệu lực /
 // Phạm vi / Trạng thái. Sửa voucher là task screen riêng
 // (/chain/vouchers/edit) như promotionEdit của prototype.
+// Danh sách không chứa nút thao tác (FE-14): bấm vào mã voucher
+// để mở trang chi tiết /chain/vouchers/detail?id=, nơi đặt Sửa,
+// Xoá mềm / Kích hoạt lại và Xóa hẳn.
 export default function VouchersPage() {
   const { user } = useAuth();
   const { navigate } = useRouter();
@@ -34,8 +36,6 @@ export default function VouchersPage() {
   const [keyword, setKeyword] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [loading, setLoading] = useState(true);
-  const [confirm, setConfirm] = useState(null); // { kind: 'activate'|'soft'|'hard', row }
-  const [busy, setBusy] = useState(false);
   const [scopes, setScopes] = useState({}); // voucherId -> text phạm vi
   const toastRef = useRef(toast);
   toastRef.current = toast;
@@ -78,34 +78,20 @@ export default function VouchersPage() {
     load();
   }, [load]);
 
-  async function runConfirm() {
-    if (!confirm) return;
-    setBusy(true);
-    try {
-      if (confirm.kind === "activate") {
-        await vouchersApi.changeStatus(confirm.row.id, "ACTIVE");
-        toast.success(`Đã kích hoạt voucher ${confirm.row.code}.`);
-      } else if (confirm.kind === "soft") {
-        await vouchersApi.softDelete(confirm.row.id);
-        toast.success(`Đã ngừng voucher ${confirm.row.code}.`);
-      } else {
-        await vouchersApi.hardDelete(confirm.row.id);
-        toast.success(`Đã xóa hẳn voucher ${confirm.row.code}.`);
-      }
-      setConfirm(null);
-      await load();
-    } catch (err) {
-      toast.error(err.message || "Thao tác thất bại.");
-    } finally {
-      setBusy(false);
-    }
-  }
-
   const columns = [
     {
       key: "code",
       header: "Mã",
-      render: (r) => <strong className="mono">{r.code}</strong>,
+      render: (r) => (
+        <button
+          type="button"
+          className="link-btn mono"
+          style={{ fontWeight: 700, fontSize: "inherit" }}
+          onClick={() => navigate(`/chain/vouchers/detail?id=${r.id}`)}
+        >
+          {r.code}
+        </button>
+      ),
     },
     {
       key: "discountType",
@@ -151,30 +137,6 @@ export default function VouchersPage() {
       key: "status",
       header: "Trạng thái",
       render: (r) => <StatusTag status={r.status} label={STATUS_LABELS[r.status] || r.status} />,
-    },
-    {
-      key: "actions",
-      header: "Thao tác",
-      width: 280,
-      render: (r) => (
-        <div className="d-flex gap-2">
-          <Button size="sm" variant="outline-secondary" onClick={() => navigate(`/chain/vouchers/edit?id=${r.id}`)}>
-            Sửa
-          </Button>
-          {r.status === "ACTIVE" ? (
-            <Button size="sm" variant="outline-secondary" onClick={() => setConfirm({ kind: "soft", row: r })}>
-              Xoá mềm
-            </Button>
-          ) : (
-            <Button size="sm" variant="outline-secondary" onClick={() => setConfirm({ kind: "activate", row: r })}>
-              Kích hoạt
-            </Button>
-          )}
-          <Button size="sm" variant="outline-secondary" onClick={() => setConfirm({ kind: "hard", row: r })}>
-            Xóa hẳn
-          </Button>
-        </div>
-      ),
     },
   ];
 
@@ -231,39 +193,6 @@ export default function VouchersPage() {
             </Form.Select>
           </>
         }
-      />
-
-      <ConfirmDialog
-        show={!!confirm}
-        title={
-          confirm?.kind === "activate"
-            ? "Kích hoạt voucher"
-            : confirm?.kind === "soft"
-              ? "Xoá mềm voucher"
-              : "Xóa hẳn voucher"
-        }
-        body={
-          confirm?.kind === "activate" ? (
-            <>
-              Kích hoạt lại voucher <strong>{confirm?.row.code}</strong>?
-            </>
-          ) : confirm?.kind === "soft" ? (
-            <>
-              Xoá mềm voucher <strong>{confirm?.row.code}</strong>? Voucher chuyển sang trạng thái ngừng hoạt
-              động và có thể kích hoạt lại.
-            </>
-          ) : (
-            <>
-              Xóa hẳn voucher <strong>{confirm?.row.code}</strong>? Thao tác không thể hoàn tác. Voucher đã có
-              lượt dùng sẽ bị backend từ chối xóa.
-            </>
-          )
-        }
-        confirmLabel={confirm?.kind === "hard" ? "Xóa hẳn" : "Xác nhận"}
-        danger={confirm?.kind === "hard"}
-        busy={busy}
-        onConfirm={runConfirm}
-        onCancel={() => !busy && setConfirm(null)}
       />
     </AdminLayout>
   );

@@ -18,6 +18,7 @@ import BranchesPage from "./pages/BranchesPage.jsx";
 import BranchEditPage from "./pages/BranchEditPage.jsx";
 import BranchDetailPage from "./pages/BranchDetailPage.jsx";
 import VouchersPage from "./pages/VouchersPage.jsx";
+import VoucherDetailPage from "./pages/VoucherDetailPage.jsx";
 import VoucherEditPage from "./pages/VoucherEditPage.jsx";
 import {
   ShowcaseAdminPage,
@@ -175,6 +176,16 @@ export default function App() {
                   <RequireAuth>
                     <RequireRole roles={["COO"]}>
                       <VouchersPage />
+                    </RequireRole>
+                  </RequireAuth>
+                ),
+              },
+              {
+                pattern: "/chain/vouchers/detail",
+                render: () => (
+                  <RequireAuth>
+                    <RequireRole roles={["COO"]}>
+                      <VoucherDetailPage />
                     </RequireRole>
                   </RequireAuth>
                 ),
