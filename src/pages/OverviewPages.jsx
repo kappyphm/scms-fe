@@ -55,33 +55,6 @@ function summarize(orders) {
   };
 }
 
-function MenuSections({ user }) {
-  const menu = buildMenu(user);
-  return menu.map((section) => (
-    <div key={section.group} className="mb-4">
-      <div
-        className="text-muted-scms mb-2"
-        style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase" }}
-      >
-        {section.group}
-      </div>
-      <div className="scms-panel">
-        {section.items.map((item, idx) => (
-          <RouteLink
-            key={item.key}
-            to={item.path}
-            className="d-flex justify-content-between align-items-center px-4 py-3 text-decoration-none"
-            style={{ borderTop: idx === 0 ? "none" : "1px solid var(--line)", color: "var(--ink)" }}
-          >
-            <span style={{ fontWeight: 600 }}>{item.label}</span>
-            <span className="text-muted-scms d-inline-flex"><Icon name="arrowRight" size={15} /></span>
-          </RouteLink>
-        ))}
-      </div>
-    </div>
-  ));
-}
-
 function Shell({ user, title, screenCode, description, children }) {
   return (
     <AdminLayout
@@ -251,7 +224,6 @@ export function BranchOverviewPage() {
         </Col>
       </Row>
 
-      <MenuSections user={user} />
     </Shell>
   );
 }
@@ -344,7 +316,6 @@ export function ChainOverviewPage() {
           </div>
         </>
       )}
-      <MenuSections user={user} />
     </Shell>
   );
 }
