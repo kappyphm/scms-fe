@@ -29,6 +29,11 @@ export const productsApi = {
     return http.delete(`/products/${id}/permanent`);
   },
   // --- FE-09: size/giá + topping của sản phẩm (UC11) ---
+  // Công thức (UC12, chỉ đọc): GET /products/{id}/recipe?size=S|M|L
+  // -> [{ ingredientId, ingredientName, baseUnit, quantityBase, size }]
+  recipe(id, size) {
+    return http.get(`/products/${id}/recipe`, { params: size ? { size } : {} });
+  },
   listSizes(id) {
     return http.get(`/products/${id}/sizes`);
   },
