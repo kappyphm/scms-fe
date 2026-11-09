@@ -11,6 +11,7 @@ import { branchesApi } from "../api/branchesApi.js";
 import { ordersApi } from "../api/ordersApi.js";
 import { shiftsApi } from "../api/shiftsApi.js";
 import { posCart, usePosCart, lineTotal, cartSubtotal, cartCount } from "../pos/posCartStore.js";
+import { posCashier, usePosCashier } from "../pos/posCashierStore.js";
 
 // SCR-04 — POS bán hàng (FE-27): chép đúng prototype views-pos.js —
 // shell riêng toàn màn hình, topbar tối (brand về trang tổng quan, chi
@@ -20,6 +21,12 @@ import { posCart, usePosCart, lineTotal, cartSubtotal, cartCount } from "../pos/
 // sang màn hình thanh toán POP-02.
 export default function PosPage() {
   const { user } = useAuth();
+  const cashier = usePosCashier();
+  // Chế độ máy bán hàng (FE-34): không có phiên web, POS chạy theo
+  // phiên thu ngân mở bằng PIN. Chế độ này không đọc ca quỹ (API ca
+  // cần đăng nhập) và không chặn thanh toán theo ca — backend
+  // không yêu cầu ca khi thanh toán.
+  const terminal = !user && Boolean(cashier);
   const { navigate } = useRouter();
   const toast = useToast();
   const toastRef = useRef(toast);
@@ -30,7 +37,7 @@ export default function PosPage() {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [branches, setBranches] = useState([]);
-  const [branchId, setBranchId] = useState(user?.branchId || null);
+  const [branchId, setBranchId] = useState(user?.branchId || cashier?.branchId || null);
   const [shift, setShift] = useState(null);
   const [keyword, setKeyword] = useState("");
   const [categoryId, setCategoryId] = useState(null);
@@ -57,21 +64,22 @@ export default function PosPage() {
         const brPage = await branchesApi.list({ uiPage: 1, size: 100 });
         const open = (brPage.items || []).filter((b) => b.status === "OPEN");
         setBranches(open);
-        if (open.length) setBranchId((cur) => cur || open[0].id);
+        // Máy bán hàng giữ đúng chi nhánh đã thiết lập, không tự chọn.
+        if (open.length && !cashier) setBranchId((cur) => cur || open[0].id);
       }
     } catch (err) {
       toastRef.current.error(err.message || "Không tải được menu bán hàng.");
     } finally {
       setLoading(false);
     }
-  }, [user?.branchId]);
+  }, [user?.branchId, cashier]);
 
   useEffect(() => {
     load();
   }, [load]);
 
   useEffect(() => {
-    if (!branchId) return;
+    if (!branchId || terminal) return;
     let cancelled = false;
     shiftsApi
       .current(branchId)
@@ -84,7 +92,7 @@ export default function PosPage() {
     return () => {
       cancelled = true;
     };
-  }, [branchId]);
+  }, [branchId, terminal]);
 
   const branch = useMemo(() => {
     if (user?.branchId) return { id: user.branchId, code: "", name: user.branchName || "" };
@@ -122,7 +130,7 @@ export default function PosPage() {
       navigate(`/pos/checkout?id=${pendingOrderId}`);
       return;
     }
-    if (!shift) {
+    if (!shift && !terminal) {
       toast.error("Vui lòng mở ca quỹ trước khi thanh toán.");
       return;
     }
@@ -161,9 +169,24 @@ export default function PosPage() {
   }
 
   const shiftTime = shift?.openedAt || shift?.plannedStart || shift?.createdAt;
-  const shiftLabel = shift
-    ? `Ca ${shiftTime ? new Date(shiftTime).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" }) : ""}${user?.fullName ? ` · ${user.fullName}` : ""}`
-    : "Chưa mở ca";
+  const shiftLabel = terminal
+    ? `Thu ngân: ${cashier?.name || ""}`
+    : shift
+      ? `Ca ${shiftTime ? new Date(shiftTime).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" }) : ""}${user?.fullName ? ` · ${user.fullName}` : ""}`
+      : "Chưa mở ca";
+
+  function lockTerminal() {
+    posCart.clear();
+    posCashier.clear();
+  }
+
+  const operatorName = user?.fullName || cashier?.name || "";
+  const operatorInitials = (operatorName || "?")
+    .split(" ")
+    .slice(-2)
+    .map((x) => x[0])
+    .join("")
+    .toUpperCase();
 
   return (
     <div className="pos-shell">
@@ -173,7 +196,7 @@ export default function PosPage() {
             <span className="brand__mark">SC</span>
             <span className="brand__name">SCMS POS</span>
           </RouteLink>
-          {user?.branchId ? (
+          {user?.branchId || terminal ? (
             <span className="topbar__branch" style={{ color: "#d8d2c8" }}>
               {branch?.name || ""}
             </span>
@@ -195,22 +218,25 @@ export default function PosPage() {
           </span>
         </div>
         <div className="topbar__right">
-          <RouteLink className="btn btn-sm" to="/branch/orders">
-            Đơn hàng
-          </RouteLink>
-          <RouteLink className="btn btn-sm" to="/branch/shift">
-            Ca quỹ
-          </RouteLink>
+          {!terminal ? (
+            <>
+              <RouteLink className="btn btn-sm" to="/branch/orders">
+                Đơn hàng
+              </RouteLink>
+              <RouteLink className="btn btn-sm" to="/branch/shift">
+                Ca quỹ
+              </RouteLink>
+            </>
+          ) : (
+            <button type="button" className="btn btn-sm" onClick={lockTerminal}>
+              Khóa máy
+            </button>
+          )}
           <span className="topbar__clock">
             {clock.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
           </span>
-          <span className="avatar" title={user?.fullName || ""}>
-            {(user?.fullName || "?")
-              .split(" ")
-              .slice(-2)
-              .map((x) => x[0])
-              .join("")
-              .toUpperCase()}
+          <span className="avatar" title={operatorName}>
+            {operatorInitials}
           </span>
         </div>
       </div>
@@ -230,7 +256,7 @@ export default function PosPage() {
               {c.name} <span>{products.filter((p) => p.categoryId === c.id).length}</span>
             </button>
           ))}
-          {user?.role !== "CASHIER" ? (
+          {user && user.role !== "CASHIER" ? (
             <>
               <div className="divider mt-16 mb-12" />
               <RouteLink className="nav-item" to="/branch/inventory">
@@ -250,7 +276,7 @@ export default function PosPage() {
         </aside>
 
         <section className="pos-products">
-          {!loading && !shift ? (
+          {!loading && !shift && !terminal ? (
             <div className="notice notice--warn pos-notice">
               <span className="notice__icon">!</span>
               <div>
@@ -318,7 +344,7 @@ export default function PosPage() {
               <span className="badge-count">{count}</span>
             </div>
             <div className="meta">
-              {user?.fullName || ""} · {shift ? shiftLabel.replace("Ca ", "Ca ") : "Chưa mở ca"}
+              {operatorName} · {terminal ? "Máy bán hàng" : shift ? shiftLabel : "Chưa mở ca"}
             </div>
           </div>
 

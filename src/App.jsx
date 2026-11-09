@@ -4,9 +4,10 @@ import { HashRouter, Routes, useRouter } from "./router/HashRouter.jsx";
 import { ToastProvider } from "./components/ToastContext.jsx";
 import { AuthProvider, useAuth } from "./auth/AuthContext.jsx";
 import { RequireAuth, RequireRole } from "./auth/guards.jsx";
+import PosGate from "./pos/PosGate.jsx";
 import { landingPath } from "./auth/landing.js";
 import LoginPage from "./pages/LoginPage.jsx";
-import { BranchOverviewPage, ChainOverviewPage } from "./pages/OverviewPages.jsx";
+import RoleHomePage from "./pages/RoleHomePage.jsx";
 import MenuPage from "./pages/MenuPage.jsx";
 import ProductEditPage from "./pages/menu/ProductEditPage.jsx";
 import ProductDetailPage from "./pages/menu/ProductDetailPage.jsx";
@@ -17,7 +18,6 @@ import ToppingEditPage from "./pages/menu/ToppingEditPage.jsx";
 import KioskPage from "./pages/KioskPage.jsx";
 import RolesPage from "./pages/RolesPage.jsx";
 import SepaySettingsPage from "./pages/SepaySettingsPage.jsx";
-import SyncSettingsPage from "./pages/SyncSettingsPage.jsx";
 import PosPage from "./pages/PosPage.jsx";
 import PosItemPage from "./pages/PosItemPage.jsx";
 import PosCheckoutPage from "./pages/PosCheckoutPage.jsx";
@@ -76,7 +76,7 @@ export default function App() {
                 pattern: "/chain/overview",
                 render: () => (
                   <RequireAuth>
-                    <ChainOverviewPage />
+                    <RoleHomePage title="Tổng quan chuỗi" screenCode="SCR-10" />
                   </RequireAuth>
                 ),
               },
@@ -84,38 +84,32 @@ export default function App() {
                 pattern: "/branch/overview",
                 render: () => (
                   <RequireAuth>
-                    <BranchOverviewPage />
+                    <RoleHomePage title="Tổng quan chi nhánh" screenCode="SCR-07" />
                   </RequireAuth>
                 ),
               },
               {
                 pattern: "/pos",
                 render: () => (
-                  <RequireAuth>
-                    <RequireRole roles={["COO", "BRANCH_MANAGER", "CASHIER"]}>
-                      <PosPage />
-                    </RequireRole>
-                  </RequireAuth>
+                  <PosGate>
+                    <PosPage />
+                  </PosGate>
                 ),
               },
               {
                 pattern: "/pos/item",
                 render: () => (
-                  <RequireAuth>
-                    <RequireRole roles={["COO", "BRANCH_MANAGER", "CASHIER"]}>
-                      <PosItemPage />
-                    </RequireRole>
-                  </RequireAuth>
+                  <PosGate>
+                    <PosItemPage />
+                  </PosGate>
                 ),
               },
               {
                 pattern: "/pos/checkout",
                 render: () => (
-                  <RequireAuth>
-                    <RequireRole roles={["COO", "BRANCH_MANAGER", "CASHIER"]}>
-                      <PosCheckoutPage />
-                    </RequireRole>
-                  </RequireAuth>
+                  <PosGate>
+                    <PosCheckoutPage />
+                  </PosGate>
                 ),
               },
               {
@@ -304,16 +298,6 @@ export default function App() {
                   <RequireAuth>
                     <RequireRole roles={["COO", "BRANCH_MANAGER"]}>
                       <EmployeeEditPage />
-                    </RequireRole>
-                  </RequireAuth>
-                ),
-              },
-              {
-                pattern: "/settings/sync",
-                render: () => (
-                  <RequireAuth>
-                    <RequireRole roles={["COO"]}>
-                      <SyncSettingsPage />
                     </RequireRole>
                   </RequireAuth>
                 ),

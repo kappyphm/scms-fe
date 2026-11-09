@@ -14,11 +14,12 @@ import { tokenStore } from "./tokenStore.js";
 //   "scms:session-expired" để AuthContext đưa người dùng về trang đăng nhập.
 
 export class ApiError extends Error {
-  constructor({ status = 0, code = "NETWORK_ERROR", message = "Không kết nối được tới máy chủ.", fieldErrors = [], traceId = null }) {
+  constructor({ status = 0, code = "NETWORK_ERROR", detailCode = null, message = "Không kết nối được tới máy chủ.", fieldErrors = [], traceId = null }) {
     super(message);
     this.name = "ApiError";
     this.status = status;
     this.code = code;
+    this.detailCode = detailCode;
     this.fieldErrors = fieldErrors; // [{ field, code, message }]
     this.traceId = traceId;
   }
@@ -39,6 +40,7 @@ function toApiError(error) {
   return new ApiError({
     status: response.status,
     code: body.code || `HTTP_${response.status}`,
+    detailCode: body.detailCode || null,
     message: body.message || "Đã xảy ra lỗi khi xử lý yêu cầu.",
     fieldErrors: Array.isArray(body.fieldErrors) ? body.fieldErrors : Array.isArray(body.errors) ? body.errors : [],
     traceId: body.traceId || null,
