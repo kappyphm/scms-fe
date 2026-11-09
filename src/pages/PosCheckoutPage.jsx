@@ -9,6 +9,7 @@ import { formatVnd } from "../lib/format.js";
 import { ordersApi } from "../api/ordersApi.js";
 import { paymentsApi } from "../api/paymentsApi.js";
 import { posCart } from "../pos/posCartStore.js";
+import { usePosCashier } from "../pos/posCashierStore.js";
 
 const QUICK_AMOUNTS = [100000, 200000, 500000];
 
@@ -22,6 +23,8 @@ const QUICK_AMOUNTS = [100000, 200000, 500000];
 export default function PosCheckoutPage() {
   const { query, navigate } = useRouter();
   const { user } = useAuth();
+  const cashier = usePosCashier();
+  const operatorName = user?.fullName || cashier?.name || "";
   const toast = useToast();
   const toastRef = useRef(toast);
   toastRef.current = toast;
@@ -271,7 +274,7 @@ export default function PosCheckoutPage() {
             <div className="flex justify-between">
               <div>
                 <div className="page-code">ĐƠN {order.receiptNo}</div>
-                <h2 style={{ fontSize: 17 }}>{user?.fullName || ""}</h2>
+                <h2 style={{ fontSize: 17 }}>{operatorName}</h2>
                 <div className="small muted">
                   {user?.branchName || ""} ·{" "}
                   {order.createdAt ? new Date(order.createdAt).toLocaleDateString("vi-VN") : ""}
